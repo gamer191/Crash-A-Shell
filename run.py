@@ -387,7 +387,6 @@ def str_from_nsstring(pa: PyNeApple, nsstr: Union[c_void_p, NotNull_VoidP], *, d
     return py_typecast(bytes, pa.send_message(
         nsstr, b'UTF8String', restype=c_char_p)).decode() if nsstr.value else default
 
-breakpoint()
 navidg_cbdct: 'PFC_NaviDelegate.CBDICT_TYPE' = {}
 with PyNeApple() as pa:
     class PFC_NaviDelegate:
@@ -427,6 +426,7 @@ with PyNeApple() as pa:
     pa.class_addProtocol(Py_NaviDg, pa.objc_getProtocol(b'WKNavigationDelegate'))
     pa.objc_registerClassPair(Py_NaviDg)
 
+    breakpoint()
     with ExitStack() as exsk:
         p_cfg = pa.safe_new_object(WKWebViewConfiguration)
         exsk.callback(pa.send_message, p_cfg, b'release')
