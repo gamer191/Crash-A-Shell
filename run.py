@@ -389,6 +389,43 @@ def str_from_nsstring(pa: PyNeApple, nsstr: Union[c_void_p, NotNull_VoidP], *, d
 
 navidg_cbdct: 'PFC_NaviDelegate.CBDICT_TYPE' = {}
 with PyNeApple() as pa:
+    class PFC_NaviDelegate:
+        CBDICT_TYPE = dict[int, Callable[[], None]]
+        SIGNATURE_WEBVIEW_DIDFINISHNAVIGATION = b'v@:@@'
+
+        @staticmethod
+        def webView0_didFinishNavigation1(this: VOIDP_ARGTYPE, sel: VOIDP_ARGTYPE, rp_webview: VOIDP_ARGTYPE, rp_navi: VOIDP_ARGTYPE) -> None:
+            if cb := navidg_cbdct.get(rp_navi or 0):
+                cb()
+
+    pa.load_framework_from_path('Foundation')
+    cf = pa.load_framework_from_path('CoreFoundation')
+    pa.load_framework_from_path('WebKit')
+    NSDictionary = pa.safe_objc_getClass(b'NSDictionary')
+    NSString = pa.safe_objc_getClass(b'NSString')
+    NSNumber = pa.safe_objc_getClass(b'NSNumber')
+    NSObject = pa.safe_objc_getClass(b'NSObject')
+    NSURL = pa.safe_objc_getClass(b'NSURL')
+    WKContentWorld = pa.safe_objc_getClass(b'WKContentWorld')
+    WKWebView = pa.safe_objc_getClass(b'WKWebView')
+    WKWebViewConfiguration = c_void_p(pa.objc_getClass(b'WKWebViewConfiguration'))
+
+    lstop = cfn_at(cf(b'CFRunLoopStop').value, None, c_void_p)
+    lrun = cfn_at(cf(b'CFRunLoopRun').value, None)
+    getmain = cfn_at(cf(b'CFRunLoopGetMain').value, c_void_p)
+    mainloop = getmain()
+    kcf_true = c_void_p.from_address(cf(b'kCFBooleanTrue').value)
+
+    Py_NaviDg = pa.objc_allocateClassPair(NSObject, b'PyForeignClass_NavigationDelegate', 0)
+    if not Py_NaviDg:
+        raise RuntimeError('Failed to allocate class PyForeignClass_NavigationDelegate, did you register twice?')
+    pa.class_addMethod(
+        Py_NaviDg, pa.sel_registerName(b'webView:didFinishNavigation:'),
+        as_fnptr(PFC_NaviDelegate.webView0_didFinishNavigation1, None, c_void_p, c_void_p, c_void_p, c_void_p),
+        PFC_NaviDelegate.SIGNATURE_WEBVIEW_DIDFINISHNAVIGATION)
+    pa.class_addProtocol(Py_NaviDg, pa.objc_getProtocol(b'WKNavigationDelegate'))
+    pa.objc_registerClassPair(Py_NaviDg)
+
     with ExitStack() as exsk:
         p_cfg = pa.safe_new_object(WKWebViewConfiguration)
         exsk.callback(pa.send_message, p_cfg, b'release')
