@@ -1,6 +1,3 @@
-HTML = rb'''<!DOCTYPE html><html lang="en"><head><title></title></head><body></body></html>'''
-HOST = rb'''https://www.youtube.com/robots.txt'''
-
 import os
 import platform
 import struct
@@ -490,11 +487,11 @@ def main():
 
             with ExitStack() as exsk:
                 ps_html = pa.safe_new_object(
-                    NSString, b'initWithUTF8String:', HTML,
+                    NSString, b'initWithUTF8String:', rb'''<!DOCTYPE html><html lang="en"><head><title></title></head><body></body></html>''',
                     argtypes=(c_char_p, ))
                 exsk.callback(pa.send_message, ps_html, b'release')
                 ps_base_url = pa.safe_new_object(
-                    NSString, b'initWithUTF8String:', HOST,
+                    NSString, b'initWithUTF8String:', rb'''https://www.youtube.com/robots.txt''',
                     argtypes=(c_char_p, ))
                 exsk.callback(pa.send_message, ps_base_url, b'release')
                 purl_base = pa.safe_new_object(
@@ -513,7 +510,7 @@ def main():
 
                 navidg_cbdct[rp_navi.value] = cb_navi_done
 
-                debug_log(f'loading: local HTML@{HOST.decode()}')
+                debug_log(f'loading: local HTML@{rb'''https://www.youtube.com/robots.txt'''.decode()}')
                 lrun()
             debug_log('navigation done')
 
