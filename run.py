@@ -50,14 +50,12 @@ def setup_signature(c_fn, restype: Optional[type] = None, *argtypes: type):
 
 def cfn_at(addr: int, restype: Optional[type] = None, *argtypes: type) -> Callable:
     argss = ', '.join(str(t) for t in argtypes)
-    debug_log(f'Casting function pointer {addr} to {restype}(*)({argss})')
     return CFUNCTYPE(restype, *argtypes)(addr)
 
 
 def as_fnptr(cb: Callable, restype: Optional[type] = None, *argtypes: type) -> c_void_p:
     argss = ', '.join(str(t) for t in argtypes)
     fnptr = cast(CFUNCTYPE(restype, *argtypes)(cb), c_void_p)
-    debug_log(f'Casting python callable {cb} to {restype}(*)({argss}) at {fnptr.value}')
     return fnptr
 
 
@@ -115,14 +113,12 @@ def dlsym_factory(ldl_openmode: int = os.RTLD_NOW):
 
     @contextmanager
     def dlsym_factory(path: bytes, mode: int = os.RTLD_LAZY) -> Generator[DLSYM_FUNC, None, None]:
-        debug_log(f'will dlopen {path.decode()}')
         h_lib = DLError.handle(
             fn_dlopen(path, mode),
             b'dlopen', path.decode(), fn_dlerror())
         try:
             yield DLError.wrap(fn_dlsym, b'dlsym', fn_dlerror, c_void_p(h_lib), success_handle=lambda x: c_void_p((lambda x: debug_log(f'dlsym@{x}', ret=x))(x)))
         finally:
-            debug_log(f'will dlclose {path.decode()}')
             DLError.handle(
                 not fn_dlclose(h_lib),
                 b'dlclose', path.decode(), fn_dlerror())
@@ -295,7 +291,6 @@ class PyNeApple:
 
     def send_message(self, obj: c_void_p, sel_name: bytes, *args, restype: Optional[type] = None, argtypes: tuple[type, ...] = (), is_super: bool = False):
         sel = c_void_p(self.sel_registerName(sel_name))
-        debug_log(f'SEL for {sel_name.decode()}: {sel.value}')
         if is_super:
             receiver = objc_super(receiver=obj, super_class=c_void_p(self.send_message(self.object_getClass(obj), b'superclass', restype=c_void_p)))
             cfn_at(self.pobjc_msgSendSuper, restype, objc_super, c_void_p, *argtypes)(receiver, sel, *args)
@@ -318,7 +313,6 @@ class PyNeApple:
         Cls = c_void_p(self.objc_getClass(name))
         if not Cls.value:
             raise RuntimeError(f'Failed to get class {name.decode()}')
-        debug_log(f'getClass {name.decode()} = {Cls.value}')
         return NotNull_VoidP(Cls.value)
 
     def make_block(self, cb: Callable, restype: Optional[type], *argtypes: type, signature: Optional[bytes] = None) -> 'ObjCBlock':
@@ -408,14 +402,12 @@ def main():
 
                 @staticmethod
                 def webView0_didFinishNavigation1(this: VOIDP_ARGTYPE, sel: VOIDP_ARGTYPE, rp_webview: VOIDP_ARGTYPE, rp_navi: VOIDP_ARGTYPE) -> None:
-                    debug_log(f'[(PyForeignClass_NavigationDelegate){this} webView: {rp_webview} didFinishNavigation: {rp_navi}]')
                     if cb := navidg_cbdct.get(rp_navi or 0):
                         cb()
 
             pa.load_framework_from_path('Foundation')
             cf = pa.load_framework_from_path('CoreFoundation')
             pa.load_framework_from_path('WebKit')
-            debug_log('Loaded libs')
             NSDictionary = pa.safe_objc_getClass(b'NSDictionary')
             NSString = pa.safe_objc_getClass(b'NSString')
             NSNumber = pa.safe_objc_getClass(b'NSNumber')
@@ -440,7 +432,6 @@ def main():
                 PFC_NaviDelegate.SIGNATURE_WEBVIEW_DIDFINISHNAVIGATION)
             pa.class_addProtocol(Py_NaviDg, pa.objc_getProtocol(b'WKNavigationDelegate'))
             pa.objc_registerClassPair(Py_NaviDg)
-            debug_log('Registered PyForeignClass_NavigationDelegate')
 
             with ExitStack() as exsk:
                 p_cfg = pa.safe_new_object(WKWebViewConfiguration)
@@ -476,14 +467,12 @@ def main():
                     CGRect(), p_cfg,
                     argtypes=(CGRect, c_void_p))
                 pa.release_on_exit(p_webview)
-                debug_log('webview init')
 
             p_navidg = pa.safe_new_object(Py_NaviDg)
             pa.release_on_exit(p_navidg)
             pa.send_message(
                 p_webview, b'setNavigationDelegate:',
                 p_navidg, argtypes=(c_void_p, ))
-            debug_log('webview set navidg')
 
             with ExitStack() as exsk:
                 ps_html = pa.safe_new_object(
@@ -502,17 +491,13 @@ def main():
                 rp_navi = NotNull_VoidP(pa.send_message(
                     p_webview, b'loadHTMLString:baseURL:', ps_html, purl_base,
                     restype=c_void_p, argtypes=(c_void_p, c_void_p)) or 0)
-                debug_log(f'Navigation started: {rp_navi}')
 
                 def cb_navi_done():
-                    debug_log('navigation done, stopping loop')
                     lstop(mainloop)
 
                 navidg_cbdct[rp_navi.value] = cb_navi_done
 
-                debug_log(f'loading: local HTML@https://www.youtube.com/robots.txt')
                 lrun()
-            debug_log('navigation done')
 
             jsresult_id = c_void_p()
             jsresult_err = c_void_p()
@@ -761,7 +746,6 @@ return `:.:${document.URL}: ${pot}`;
                     pa.release_on_exit(jsresult_id)
                     jsresult_err = c_void_p(pa.send_message(c_void_p(err or 0), b'copy', restype=c_void_p))
                     pa.release_on_exit(jsresult_err)
-                    debug_log(f'JS done, stopping loop; {id_result=}, {err=}')
                     lstop(mainloop)
 
                 chblock = pa.make_block(completion_handler, None, POINTER(ObjCBlock), c_void_p, c_void_p)
@@ -783,7 +767,6 @@ return `:.:${document.URL}: ${pot}`;
                     b'description', restype=c_void_p)), default='<no description provided>')
                 raise RuntimeError(f'JS failed: NSError@{jsresult_err.value}, {code=}, domain={s_domain}, user info={s_uinfo}')
 
-            debug_log('JS execution completed')
             if not jsresult_id:
                 s_rtype = 'nothing'
                 s_result = 'nil'
@@ -797,7 +780,6 @@ return `:.:${document.URL}: ${pot}`;
             else:
                 s_rtype = '<unknown type>'
                 s_result = '<unknown>'
-            debug_log(f'JS returned {s_rtype}: {s_result}')
     except Exception:
         import traceback
         sys.stderr.write(traceback.format_exc())
