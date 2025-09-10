@@ -284,8 +284,6 @@ class PyNeApple:
 
     def safe_objc_getClass(self, name: bytes) -> NotNull_VoidP:
         Cls = c_void_p(self.objc_getClass(name))
-        if not Cls.value:
-            raise RuntimeError(f'Failed to get class {name.decode()}')
         return NotNull_VoidP(Cls.value)
 
 
