@@ -122,7 +122,6 @@ class objc_super(Structure):
 
 class CRet:
     Boolean = type[c_bool]
-    Py_Boolean = bool
 
     Char = type[c_char]
     Py_Char = bytes
@@ -225,7 +224,7 @@ class PyNeApple:
         return ret
 
     @overload
-    def send_message(self, obj: c_void_p, sel_name: bytes, *args, restype: CRet.Boolean, argtypes: tuple[type, ...], is_super: bool = False) -> CRet.Py_Boolean: ...
+    def send_message(self, obj: c_void_p, sel_name: bytes, *args, restype: CRet.Boolean, argtypes: tuple[type, ...], is_super: bool = False) -> bool: ...
     @overload
     def send_message(self, obj: c_void_p, sel_name: bytes, *args, restype: CRet.Char, argtypes: tuple[type, ...], is_super: bool = False) -> CRet.Py_Char: ...
     @overload
@@ -241,7 +240,7 @@ class PyNeApple:
     @overload
     def send_message(self, obj: c_void_p, sel_name: bytes, *args, restype: None = None, argtypes: tuple[type, ...], is_super: bool = False) -> None: ...
     @overload
-    def send_message(self, obj: c_void_p, sel_name: bytes, *, restype: CRet.Boolean, is_super: bool = False) -> CRet.Py_Boolean: ...
+    def send_message(self, obj: c_void_p, sel_name: bytes, *, restype: CRet.Boolean, is_super: bool = False) -> bool: ...
     @overload
     def send_message(self, obj: c_void_p, sel_name: bytes, *, restype: CRet.Char, is_super: bool = False) -> CRet.Py_Char: ...
     @overload
