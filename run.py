@@ -423,26 +423,6 @@ with PyNeApple() as pa:
         exsk.callback(pa.send_message, p_cfg, b'release')
 
         rp_pref = c_void_p(pa.send_message(p_cfg, b'preferences', restype=c_void_p))
-        pa.send_message(
-            rp_pref, b'setJavaScriptCanOpenWindowsAutomatically:',
-            c_byte(1), argtypes=(c_byte,))
-        p_setkey0 = pa.safe_new_object(
-            pa.safe_objc_getClass(b'NSString'), b'initWithUTF8String:', b'allowFileAccessFromFileURLs',
-            argtypes=(c_char_p, ))
-        exsk.callback(pa.send_message, p_setkey0, b'release')
-        pa.send_message(
-            rp_pref, b'setValue:forKey:',
-            kcf_true, p_setkey0,
-            argtypes=(c_void_p, c_void_p))
-        rp_pref = None
-        p_setkey1 = pa.safe_new_object(
-            pa.safe_objc_getClass(b'NSString'), b'initWithUTF8String:', b'allowUniversalAccessFromFileURLs',
-            argtypes=(c_char_p, ))
-        exsk.callback(pa.send_message, p_setkey1, b'release')
-        pa.send_message(
-            p_cfg, b'setValue:forKey:',
-            kcf_true, p_setkey1,
-            argtypes=(c_void_p, c_void_p))
         p_webview = pa.safe_new_object(
             pa.safe_objc_getClass(b'WKWebView'), b'initWithFrame:configuration:',
             CGRect(), p_cfg,
