@@ -510,7 +510,7 @@ def main():
 
                 navidg_cbdct[rp_navi.value] = cb_navi_done
 
-                debug_log(f'loading: local HTML@{rb'''https://www.youtube.com/robots.txt'''.decode()}')
+                debug_log(f'loading: local HTML@https://www.youtube.com/robots.txt')
                 lrun()
             debug_log('navigation done')
 
