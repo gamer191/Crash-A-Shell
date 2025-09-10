@@ -389,115 +389,114 @@ def str_from_nsstring(pa: PyNeApple, nsstr: Union[c_void_p, NotNull_VoidP], *, d
 
 
 navidg_cbdct: 'PFC_NaviDelegate.CBDICT_TYPE' = {}
-with PyNeApple() as pa:
-    class PFC_NaviDelegate:
-        CBDICT_TYPE = dict[int, Callable[[], None]]
-        SIGNATURE_WEBVIEW_DIDFINISHNAVIGATION = b'v@:@@'
+class PFC_NaviDelegate:
+    CBDICT_TYPE = dict[int, Callable[[], None]]
+    SIGNATURE_WEBVIEW_DIDFINISHNAVIGATION = b'v@:@@'
 
-        @staticmethod
-        def webView0_didFinishNavigation1(this: VOIDP_ARGTYPE, sel: VOIDP_ARGTYPE, rp_webview: VOIDP_ARGTYPE, rp_navi: VOIDP_ARGTYPE) -> None:
-            if cb := navidg_cbdct.get(rp_navi or 0):
-                cb()
+    @staticmethod
+    def webView0_didFinishNavigation1(this: VOIDP_ARGTYPE, sel: VOIDP_ARGTYPE, rp_webview: VOIDP_ARGTYPE, rp_navi: VOIDP_ARGTYPE) -> None:
+        if cb := navidg_cbdct.get(rp_navi or 0):
+            cb()
 
-    pa.load_framework_from_path('Foundation')
-    cf = pa.load_framework_from_path('CoreFoundation')
-    pa.load_framework_from_path('WebKit')
-    NSDictionary = pa.safe_objc_getClass(b'NSDictionary')
-    NSString = pa.safe_objc_getClass(b'NSString')
-    NSNumber = pa.safe_objc_getClass(b'NSNumber')
-    NSObject = pa.safe_objc_getClass(b'NSObject')
-    NSURL = pa.safe_objc_getClass(b'NSURL')
-    WKContentWorld = pa.safe_objc_getClass(b'WKContentWorld')
-    WKWebView = pa.safe_objc_getClass(b'WKWebView')
-    WKWebViewConfiguration = c_void_p(pa.objc_getClass(b'WKWebViewConfiguration'))
+PyNeApple().load_framework_from_path('Foundation')
+cf = PyNeApple().load_framework_from_path('CoreFoundation')
+PyNeApple().load_framework_from_path('WebKit')
+NSDictionary = PyNeApple().safe_objc_getClass(b'NSDictionary')
+NSString = PyNeApple().safe_objc_getClass(b'NSString')
+NSNumber = PyNeApple().safe_objc_getClass(b'NSNumber')
+NSObject = PyNeApple().safe_objc_getClass(b'NSObject')
+NSURL = PyNeApple().safe_objc_getClass(b'NSURL')
+WKContentWorld = PyNeApple().safe_objc_getClass(b'WKContentWorld')
+WKWebView = PyNeApple().safe_objc_getClass(b'WKWebView')
+WKWebViewConfiguration = c_void_p(PyNeApple().objc_getClass(b'WKWebViewConfiguration'))
 
-    lstop = cfn_at(cf(b'CFRunLoopStop').value, None, c_void_p)
-    lrun = cfn_at(cf(b'CFRunLoopRun').value, None)
-    getmain = cfn_at(cf(b'CFRunLoopGetMain').value, c_void_p)
-    mainloop = getmain()
-    kcf_true = c_void_p.from_address(cf(b'kCFBooleanTrue').value)
+lstop = cfn_at(cf(b'CFRunLoopStop').value, None, c_void_p)
+lrun = cfn_at(cf(b'CFRunLoopRun').value, None)
+getmain = cfn_at(cf(b'CFRunLoopGetMain').value, c_void_p)
+mainloop = getmain()
+kcf_true = c_void_p.from_address(cf(b'kCFBooleanTrue').value)
 
-    Py_NaviDg = pa.objc_allocateClassPair(NSObject, b'PyForeignClass_NavigationDelegate', 0)
-    if not Py_NaviDg:
-        raise RuntimeError('Failed to allocate class PyForeignClass_NavigationDelegate, did you register twice?')
-    pa.class_addMethod(
-        Py_NaviDg, pa.sel_registerName(b'webView:didFinishNavigation:'),
-        as_fnptr(PFC_NaviDelegate.webView0_didFinishNavigation1, None, c_void_p, c_void_p, c_void_p, c_void_p),
-        PFC_NaviDelegate.SIGNATURE_WEBVIEW_DIDFINISHNAVIGATION)
-    pa.class_addProtocol(Py_NaviDg, pa.objc_getProtocol(b'WKNavigationDelegate'))
-    pa.objc_registerClassPair(Py_NaviDg)
+Py_NaviDg = PyNeApple().objc_allocateClassPair(NSObject, b'PyForeignClass_NavigationDelegate', 0)
+if not Py_NaviDg:
+    raise RuntimeError('Failed to allocate class PyForeignClass_NavigationDelegate, did you register twice?')
+PyNeApple().class_addMethod(
+    Py_NaviDg, PyNeApple().sel_registerName(b'webView:didFinishNavigation:'),
+    as_fnptr(PFC_NaviDelegate.webView0_didFinishNavigation1, None, c_void_p, c_void_p, c_void_p, c_void_p),
+    PFC_NaviDelegate.SIGNATURE_WEBVIEW_DIDFINISHNAVIGATION)
+PyNeApple().class_addProtocol(Py_NaviDg, PyNeApple().objc_getProtocol(b'WKNavigationDelegate'))
+PyNeApple().objc_registerClassPair(Py_NaviDg)
 
-    with ExitStack() as exsk:
-        p_cfg = pa.safe_new_object(WKWebViewConfiguration)
-        exsk.callback(pa.send_message, p_cfg, b'release')
+with ExitStack() as exsk:
+    p_cfg = PyNeApple().safe_new_object(WKWebViewConfiguration)
+    exsk.callback(PyNeApple().send_message, p_cfg, b'release')
 
-        rp_pref = c_void_p(pa.send_message(p_cfg, b'preferences', restype=c_void_p))
-        if not rp_pref.value:
-            raise RuntimeError('Failed to get preferences from WKWebViewConfiguration')
-        pa.send_message(
-            rp_pref, b'setJavaScriptCanOpenWindowsAutomatically:',
-            c_byte(1), argtypes=(c_byte,))
-        p_setkey0 = pa.safe_new_object(
-            NSString, b'initWithUTF8String:', b'allowFileAccessFromFileURLs',
-            argtypes=(c_char_p, ))
-        exsk.callback(pa.send_message, p_setkey0, b'release')
-        pa.send_message(
-            rp_pref, b'setValue:forKey:',
-            kcf_true, p_setkey0,
-            argtypes=(c_void_p, c_void_p))
-        rp_pref = None
+    rp_pref = c_void_p(PyNeApple().send_message(p_cfg, b'preferences', restype=c_void_p))
+    if not rp_pref.value:
+        raise RuntimeError('Failed to get preferences from WKWebViewConfiguration')
+    PyNeApple().send_message(
+        rp_pref, b'setJavaScriptCanOpenWindowsAutomatically:',
+        c_byte(1), argtypes=(c_byte,))
+    p_setkey0 = PyNeApple().safe_new_object(
+        NSString, b'initWithUTF8String:', b'allowFileAccessFromFileURLs',
+        argtypes=(c_char_p, ))
+    exsk.callback(PyNeApple().send_message, p_setkey0, b'release')
+    PyNeApple().send_message(
+        rp_pref, b'setValue:forKey:',
+        kcf_true, p_setkey0,
+        argtypes=(c_void_p, c_void_p))
+    rp_pref = None
 
-        p_setkey1 = pa.safe_new_object(
-            NSString, b'initWithUTF8String:', b'allowUniversalAccessFromFileURLs',
-            argtypes=(c_char_p, ))
-        exsk.callback(pa.send_message, p_setkey1, b'release')
-        pa.send_message(
-            p_cfg, b'setValue:forKey:',
-            kcf_true, p_setkey1,
-            argtypes=(c_void_p, c_void_p))
+    p_setkey1 = PyNeApple().safe_new_object(
+        NSString, b'initWithUTF8String:', b'allowUniversalAccessFromFileURLs',
+        argtypes=(c_char_p, ))
+    exsk.callback(PyNeApple().send_message, p_setkey1, b'release')
+    PyNeApple().send_message(
+        p_cfg, b'setValue:forKey:',
+        kcf_true, p_setkey1,
+        argtypes=(c_void_p, c_void_p))
 
-        p_webview = pa.safe_new_object(
-            WKWebView, b'initWithFrame:configuration:',
-            CGRect(), p_cfg,
-            argtypes=(CGRect, c_void_p))
-        pa.release_on_exit(p_webview)
+    p_webview = PyNeApple().safe_new_object(
+        WKWebView, b'initWithFrame:configuration:',
+        CGRect(), p_cfg,
+        argtypes=(CGRect, c_void_p))
+    PyNeApple().release_on_exit(p_webview)
 
-    p_navidg = pa.safe_new_object(Py_NaviDg)
-    pa.release_on_exit(p_navidg)
-    pa.send_message(
-        p_webview, b'setNavigationDelegate:',
-        p_navidg, argtypes=(c_void_p, ))
+p_navidg = PyNeApple().safe_new_object(Py_NaviDg)
+PyNeApple().release_on_exit(p_navidg)
+PyNeApple().send_message(
+    p_webview, b'setNavigationDelegate:',
+    p_navidg, argtypes=(c_void_p, ))
 
-    with ExitStack() as exsk:
-        ps_html = pa.safe_new_object(
-            NSString, b'initWithUTF8String:', rb'''<!DOCTYPE html><html lang="en"><head><title></title></head><body></body></html>''',
-            argtypes=(c_char_p, ))
-        exsk.callback(pa.send_message, ps_html, b'release')
-        ps_base_url = pa.safe_new_object(
-            NSString, b'initWithUTF8String:', rb'''https://www.youtube.com/robots.txt''',
-            argtypes=(c_char_p, ))
-        exsk.callback(pa.send_message, ps_base_url, b'release')
-        purl_base = pa.safe_new_object(
-            NSURL, b'initWithString:', ps_base_url,
-            argtypes=(c_void_p, ))
-        exsk.callback(pa.send_message, purl_base, b'release')
+with ExitStack() as exsk:
+    ps_html = PyNeApple().safe_new_object(
+        NSString, b'initWithUTF8String:', rb'''<!DOCTYPE html><html lang="en"><head><title></title></head><body></body></html>''',
+        argtypes=(c_char_p, ))
+    exsk.callback(PyNeApple().send_message, ps_html, b'release')
+    ps_base_url = PyNeApple().safe_new_object(
+        NSString, b'initWithUTF8String:', rb'''https://www.youtube.com/robots.txt''',
+        argtypes=(c_char_p, ))
+    exsk.callback(PyNeApple().send_message, ps_base_url, b'release')
+    purl_base = PyNeApple().safe_new_object(
+        NSURL, b'initWithString:', ps_base_url,
+        argtypes=(c_void_p, ))
+    exsk.callback(PyNeApple().send_message, purl_base, b'release')
 
-        rp_navi = NotNull_VoidP(pa.send_message(
-            p_webview, b'loadHTMLString:baseURL:', ps_html, purl_base,
-            restype=c_void_p, argtypes=(c_void_p, c_void_p)) or 0)
+    rp_navi = NotNull_VoidP(PyNeApple().send_message(
+        p_webview, b'loadHTMLString:baseURL:', ps_html, purl_base,
+        restype=c_void_p, argtypes=(c_void_p, c_void_p)) or 0)
 
-        def cb_navi_done():
-            lstop(mainloop)
+    def cb_navi_done():
+        lstop(mainloop)
 
-        navidg_cbdct[rp_navi.value] = cb_navi_done
+    navidg_cbdct[rp_navi.value] = cb_navi_done
 
-        lrun()
+    lrun()
 
-    jsresult_id = c_void_p()
-    jsresult_err = c_void_p()
-    with ExitStack() as exsk:
-        ps_script = pa.safe_new_object(
-            NSString, b'initWithUTF8String:', rb'''
+jsresult_id = c_void_p()
+jsresult_err = c_void_p()
+with ExitStack() as exsk:
+    ps_script = PyNeApple().safe_new_object(
+        NSString, b'initWithUTF8String:', rb'''
 return await (async ()=>{  // IIAFE
 try {
 // pot for browser, navigate to https://www.youtube.com/robots.txt first
@@ -516,8 +515,8 @@ const result = btoa(String.fromCharCode(...u8));
 
 if (base64url) {
 return result
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_');
+.replace(/\+/g, '-')
+.replace(/\//g, '_');
 }
 
 return result;
@@ -536,7 +535,7 @@ let base64Mod;
 
 if (base64urlCharRegex.test(base64)) {
 base64Mod = base64.replace(base64urlCharRegex, function (match) {
-    return base64urlToBase64Map[match];
+return base64urlToBase64Map[match];
 });
 } else {
 base64Mod = base64;
@@ -546,7 +545,7 @@ base64Mod = atob(base64Mod);
 
 return new Uint8Array(
 [...base64Mod].map(
-    (char) => char.charCodeAt(0)
+(char) => char.charCodeAt(0)
 )
 );
 }
@@ -573,8 +572,8 @@ const privateDoNotAccessOrElseTrustedResourceUrlWrappedValue = Array.isArray(wra
 return {
 messageId,
 interpreterJavascript: {
-    privateDoNotAccessOrElseSafeScriptWrappedValue,
-    privateDoNotAccessOrElseTrustedResourceUrlWrappedValue
+privateDoNotAccessOrElseSafeScriptWrappedValue,
+privateDoNotAccessOrElseTrustedResourceUrlWrappedValue
 },
 interpreterHash,
 program,
@@ -646,17 +645,17 @@ return { syncSnapshotFunction, vmFns };
 async function snapshot(vmFns, args, timeout = 3000) {
 return await Promise.race([
 new Promise((resolve, reject) => {
-    if (!vmFns.asyncSnapshotFunction)
-        return reject(new Error('Asynchronous snapshot function not found'));
-    vmFns.asyncSnapshotFunction((response) => resolve(response), [
-        args.contentBinding,
-        args.signedTimestamp,
-        args.webPoSignalOutput,
-        args.skipPrivacyBuffer
-    ]);
+if (!vmFns.asyncSnapshotFunction)
+    return reject(new Error('Asynchronous snapshot function not found'));
+vmFns.asyncSnapshotFunction((response) => resolve(response), [
+    args.contentBinding,
+    args.signedTimestamp,
+    args.webPoSignalOutput,
+    args.skipPrivacyBuffer
+]);
 }),
 new Promise((_, reject) =>
-    setTimeout(() => reject(new Error('VM operation timed out')), timeout)
+setTimeout(() => reject(new Error('VM operation timed out')), timeout)
 )
 ]);
 }
@@ -695,12 +694,12 @@ if (!(mintCallback instanceof Function))
 throw new Error('APF:Failed');
 return async (identifier) => {
 const res = await ((async (identifier) => {
-    const result = await mintCallback(new TextEncoder().encode(identifier));
-    if (!result)
-        throw new Error('YNJ:Undefined');
-    if (!(result instanceof Uint8Array))
-        throw new Error('ODM:Invalid');
-    return result;
+const result = await mintCallback(new TextEncoder().encode(identifier));
+if (!result)
+    throw new Error('YNJ:Undefined');
+if (!(result instanceof Uint8Array))
+    throw new Error('ODM:Invalid');
+return result;
 })(identifier));
 return u8ToBase64(res, true);
 };
@@ -724,53 +723,53 @@ return `:.:${document.URL}: ${pot}`;
 } catch(e) {return `:E:${document.URL}: ${e}`;}
 })();
 ''',
-            argtypes=(c_char_p, ))
-        exsk.callback(pa.send_message, ps_script, b'release')
+        argtypes=(c_char_p, ))
+    exsk.callback(PyNeApple().send_message, ps_script, b'release')
 
-        pd_jsargs = pa.safe_new_object(NSDictionary)
-        exsk.callback(pa.send_message, pd_jsargs, b'release')
+    pd_jsargs = PyNeApple().safe_new_object(NSDictionary)
+    exsk.callback(PyNeApple().send_message, pd_jsargs, b'release')
 
-        rp_pageworld = c_void_p(pa.send_message(
-            WKContentWorld, b'pageWorld',
-            restype=c_void_p))
+    rp_pageworld = c_void_p(PyNeApple().send_message(
+        WKContentWorld, b'pageWorld',
+        restype=c_void_p))
 
-        def completion_handler(self: VOIDP_ARGTYPE, id_result: VOIDP_ARGTYPE, err: VOIDP_ARGTYPE):
-            jsresult_id, jsresult_err
-            jsresult_id = c_void_p(pa.send_message(c_void_p(id_result or 0), b'copy', restype=c_void_p))
-            pa.release_on_exit(jsresult_id)
-            jsresult_err = c_void_p(pa.send_message(c_void_p(err or 0), b'copy', restype=c_void_p))
-            pa.release_on_exit(jsresult_err)
-            lstop(mainloop)
+    def completion_handler(self: VOIDP_ARGTYPE, id_result: VOIDP_ARGTYPE, err: VOIDP_ARGTYPE):
+        jsresult_id, jsresult_err
+        jsresult_id = c_void_p(PyNeApple().send_message(c_void_p(id_result or 0), b'copy', restype=c_void_p))
+        PyNeApple().release_on_exit(jsresult_id)
+        jsresult_err = c_void_p(PyNeApple().send_message(c_void_p(err or 0), b'copy', restype=c_void_p))
+        PyNeApple().release_on_exit(jsresult_err)
+        lstop(mainloop)
 
-        chblock = pa.make_block(completion_handler, None, POINTER(ObjCBlock), c_void_p, c_void_p)
+    chblock = PyNeApple().make_block(completion_handler, None, POINTER(ObjCBlock), c_void_p, c_void_p)
 
-        pa.send_message(
-            # Requires iOS 15.0+, maybe test its availability first?
-            p_webview, b'callAsyncJavaScript:arguments:inFrame:inContentWorld:completionHandler:',
-            ps_script, pd_jsargs, c_void_p(None), rp_pageworld, byref(chblock),
-            argtypes=(c_void_p, c_void_p, c_void_p, c_void_p, POINTER(ObjCBlock)))
+    PyNeApple().send_message(
+        # Requires iOS 15.0+, maybe test its availability first?
+        p_webview, b'callAsyncJavaScript:arguments:inFrame:inContentWorld:completionHandler:',
+        ps_script, pd_jsargs, c_void_p(None), rp_pageworld, byref(chblock),
+        argtypes=(c_void_p, c_void_p, c_void_p, c_void_p, POINTER(ObjCBlock)))
 
-        lrun()
+    lrun()
 
-    if jsresult_err:
-        code = pa.send_message(jsresult_err, b'code', restype=c_long)
-        s_domain = str_from_nsstring(pa, c_void_p(pa.send_message(
-            jsresult_err, b'domain', restype=c_void_p)), default='<unknown>')
-        s_uinfo = str_from_nsstring(pa, c_void_p(pa.send_message(
-            c_void_p(pa.send_message(jsresult_err, b'userInfo', restype=c_void_p)),
-            b'description', restype=c_void_p)), default='<no description provided>')
-        raise RuntimeError(f'JS failed: NSError@{jsresult_err.value}, {code=}, domain={s_domain}, user info={s_uinfo}')
+if jsresult_err:
+    code = PyNeApple().send_message(jsresult_err, b'code', restype=c_long)
+    s_domain = str_from_nsstring(pa, c_void_p(PyNeApple().send_message(
+        jsresult_err, b'domain', restype=c_void_p)), default='<unknown>')
+    s_uinfo = str_from_nsstring(pa, c_void_p(PyNeApple().send_message(
+        c_void_p(PyNeApple().send_message(jsresult_err, b'userInfo', restype=c_void_p)),
+        b'description', restype=c_void_p)), default='<no description provided>')
+    raise RuntimeError(f'JS failed: NSError@{jsresult_err.value}, {code=}, domain={s_domain}, user info={s_uinfo}')
 
-    if not jsresult_id:
-        s_rtype = 'nothing'
-        s_result = 'nil'
-    elif pa.instanceof(jsresult_id, NSString):
-        s_rtype = 'string'
-        s_result = str_from_nsstring(pa, py_typecast(NotNull_VoidP, jsresult_id))
-    elif pa.instanceof(jsresult_id, NSNumber):
-        s_rtype = 'number'
-        s_result = str_from_nsstring(pa, NotNull_VoidP(py_typecast(
-            int, pa.send_message(jsresult_id, b'stringValue', restype=c_void_p))))
-    else:
-        s_rtype = '<unknown type>'
-        s_result = '<unknown>'
+if not jsresult_id:
+    s_rtype = 'nothing'
+    s_result = 'nil'
+elif PyNeApple().instanceof(jsresult_id, NSString):
+    s_rtype = 'string'
+    s_result = str_from_nsstring(pa, py_typecast(NotNull_VoidP, jsresult_id))
+elif PyNeApple().instanceof(jsresult_id, NSNumber):
+    s_rtype = 'number'
+    s_result = str_from_nsstring(pa, NotNull_VoidP(py_typecast(
+        int, PyNeApple().send_message(jsresult_id, b'stringValue', restype=c_void_p))))
+else:
+    s_rtype = '<unknown type>'
+    s_result = '<unknown>'
