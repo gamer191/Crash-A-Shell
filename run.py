@@ -388,7 +388,6 @@ def str_from_nsstring(pa: PyNeApple, nsstr: Union[c_void_p, NotNull_VoidP], *, d
         nsstr, b'UTF8String', restype=c_char_p)).decode() if nsstr.value else default
 
 
-def main():
 navidg_cbdct: 'PFC_NaviDelegate.CBDICT_TYPE' = {}
 try:
     with PyNeApple() as pa:
