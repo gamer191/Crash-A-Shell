@@ -431,8 +431,6 @@ with PyNeApple() as pa:
         exsk.callback(pa.send_message, p_cfg, b'release')
 
         rp_pref = c_void_p(pa.send_message(p_cfg, b'preferences', restype=c_void_p))
-        if not rp_pref.value:
-            raise RuntimeError('Failed to get preferences from WKWebViewConfiguration')
         pa.send_message(
             rp_pref, b'setJavaScriptCanOpenWindowsAutomatically:',
             c_byte(1), argtypes=(c_byte,))
@@ -445,7 +443,6 @@ with PyNeApple() as pa:
             kcf_true, p_setkey0,
             argtypes=(c_void_p, c_void_p))
         rp_pref = None
-        breakpoint()
         p_setkey1 = pa.safe_new_object(
             NSString, b'initWithUTF8String:', b'allowUniversalAccessFromFileURLs',
             argtypes=(c_char_p, ))
@@ -454,9 +451,7 @@ with PyNeApple() as pa:
             p_cfg, b'setValue:forKey:',
             kcf_true, p_setkey1,
             argtypes=(c_void_p, c_void_p))
-        breakpoint()
         p_webview = pa.safe_new_object(
             WKWebView, b'initWithFrame:configuration:',
             CGRect(), p_cfg,
             argtypes=(CGRect, c_void_p))
-        #pa.release_on_exit(p_webview)
