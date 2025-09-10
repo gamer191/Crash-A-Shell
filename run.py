@@ -445,7 +445,7 @@ with PyNeApple() as pa:
             kcf_true, p_setkey0,
             argtypes=(c_void_p, c_void_p))
         rp_pref = None
-
+        breakpoint()
         p_setkey1 = pa.safe_new_object(
             NSString, b'initWithUTF8String:', b'allowUniversalAccessFromFileURLs',
             argtypes=(c_char_p, ))
@@ -454,7 +454,7 @@ with PyNeApple() as pa:
             p_cfg, b'setValue:forKey:',
             kcf_true, p_setkey1,
             argtypes=(c_void_p, c_void_p))
-
+        breakpoint()
         p_webview = pa.safe_new_object(
             WKWebView, b'initWithFrame:configuration:',
             CGRect(), p_cfg,
