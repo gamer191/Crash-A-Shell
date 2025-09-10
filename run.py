@@ -126,17 +126,6 @@ Integral = Union[
         type[c_size_t], type[c_ssize_t],]
 
 class PyNeApple:
-    __slots__ = (
-        '_stack', 'dlsym_of_lib', '_fwks', '_init',
-        '_objc', '_system',
-        'p_NSConcreteMallocBlock',
-        'class_addProtocol', 'class_addMethod', 'class_addIvar',
-        'class_conformsToProtocol',
-        'objc_getProtocol', 'objc_allocateClassPair', 'objc_registerClassPair',
-        'objc_getClass', 'pobjc_msgSend', 'pobjc_msgSendSuper',
-        'object_getClass', 'object_getInstanceVariable', 'object_setInstanceVariable',
-        'sel_registerName',
-    )
 
     def __init__(self):
         self._init = False
