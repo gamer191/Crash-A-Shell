@@ -30,6 +30,7 @@ def debug_log(msg, *, ret: T) -> T: ...
 
 
 def debug_log(msg, *, ret: Any = _DefaultTag):
+    breakpoint()
     if S_ISREG(os.fstat(1).st_mode):
         os.fsync(1)
     if ret is _DefaultTag:
@@ -185,7 +186,6 @@ class PyNeApple:
         self._init = False
 
     def __enter__(self):
-        breakpoint()
         if self._init:
             raise RuntimeError('instance already initialized, please create a new instance')
         try:
