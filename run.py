@@ -185,6 +185,7 @@ class PyNeApple:
         self._init = False
 
     def __enter__(self):
+        breakpoint()
         if self._init:
             raise RuntimeError('instance already initialized, please create a new instance')
         try:
