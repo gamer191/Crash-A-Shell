@@ -418,12 +418,7 @@ with PyNeApple() as pa:
     pa.class_addProtocol(Py_NaviDg, pa.objc_getProtocol(b'WKNavigationDelegate'))
     pa.objc_registerClassPair(Py_NaviDg)
 
-    with ExitStack() as exsk:
-        p_cfg = pa.safe_new_object(c_void_p(pa.objc_getClass(b'WKWebViewConfiguration')))
-        exsk.callback(pa.send_message, p_cfg, b'release')
-
-        rp_pref = c_void_p(pa.send_message(p_cfg, b'preferences', restype=c_void_p))
-        p_webview = pa.safe_new_object(
-            pa.safe_objc_getClass(b'WKWebView'), b'initWithFrame:configuration:',
-            CGRect(), p_cfg,
-            argtypes=(CGRect, c_void_p))
+    p_webview = pa.safe_new_object(
+        pa.safe_objc_getClass(b'WKWebView'), b'initWithFrame:configuration:',
+        CGRect(), pa.safe_new_object(c_void_p(pa.objc_getClass(b'WKWebViewConfiguration'))),
+        argtypes=(CGRect, c_void_p))
