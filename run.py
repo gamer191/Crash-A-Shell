@@ -259,7 +259,7 @@ class CGRect(Structure):
 
 
 with PyNeApple() as pa:
-    pa.load_framework_from_path('WebKit')
+    # pa.load_framework_from_path('WebKit')
     pa.safe_new_object(
         pa.safe_objc_getClass(b'WKWebView'), b'initWithFrame:configuration:',
         CGRect(), pa.safe_new_object(c_void_p(pa.objc_getClass(b'WKWebViewConfiguration'))),
