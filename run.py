@@ -227,14 +227,6 @@ class PyNeApple:
     def __exit__(self, exc_type, exc_value, traceback):
         return self._stack.__exit__(exc_type, exc_value, traceback)
 
-    @property
-    def dlsym_objc(self):
-        return self._objc
-
-    @property
-    def dlsym_system(self):
-        return self._system
-
     def open_dylib(self, path: bytes, mode=os.RTLD_LAZY) -> DLSYM_FUNC:
         return self._stack.enter_context(self.dlsym_of_lib(path, mode=mode))
 
@@ -298,22 +290,11 @@ class PyNeApple:
             raise RuntimeError(f'Failed to {init_name.decode()} object of class {cls.value}')
         return NotNull_VoidP(obj.value)
 
-    def release_on_exit(self, obj: c_void_p):
-        self._stack.callback(lambda: self.send_message(obj, b'release'))
-
     def safe_objc_getClass(self, name: bytes) -> NotNull_VoidP:
         Cls = c_void_p(self.objc_getClass(name))
         if not Cls.value:
             raise RuntimeError(f'Failed to get class {name.decode()}')
         return NotNull_VoidP(Cls.value)
-
-    def make_block(self, cb: Callable, restype: Optional[type], *argtypes: type, signature: Optional[bytes] = None) -> 'ObjCBlock':
-        return ObjCBlock(self, cb, restype, *argtypes, signature=signature)
-
-    def instanceof(self, obj: c_void_p, cls: c_void_p) -> bool:
-        return bool(self.send_message(
-            obj, b'isKindOfClass:',
-            cls, restype=c_byte, argtypes=(c_void_p, )))
 
 
 class ObjCBlockDescBase(Structure):
