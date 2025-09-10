@@ -389,7 +389,6 @@ def str_from_nsstring(pa: PyNeApple, nsstr: Union[c_void_p, NotNull_VoidP], *, d
 
 navidg_cbdct: 'PFC_NaviDelegate.CBDICT_TYPE' = {}
 with PyNeApple() as pa:
-    class PFC_NaviDelegate:
     pa.load_framework_from_path('WebKit')
     p_webview = pa.safe_new_object(
         pa.safe_objc_getClass(b'WKWebView'), b'initWithFrame:configuration:',
