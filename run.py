@@ -492,7 +492,7 @@ with PyNeApple() as pa:
         navidg_cbdct[rp_navi.value] = cb_navi_done
 
         lrun()
-
+    breakpoint()
     jsresult_id = c_void_p()
     jsresult_err = c_void_p()
     with ExitStack() as exsk:
@@ -751,26 +751,3 @@ return `:.:${document.URL}: ${pot}`;
             argtypes=(c_void_p, c_void_p, c_void_p, c_void_p, POINTER(ObjCBlock)))
 
         lrun()
-    breakpoint()
-    if jsresult_err:
-        code = pa.send_message(jsresult_err, b'code', restype=c_long)
-        s_domain = str_from_nsstring(pa, c_void_p(pa.send_message(
-            jsresult_err, b'domain', restype=c_void_p)), default='<unknown>')
-        s_uinfo = str_from_nsstring(pa, c_void_p(pa.send_message(
-            c_void_p(pa.send_message(jsresult_err, b'userInfo', restype=c_void_p)),
-            b'description', restype=c_void_p)), default='<no description provided>')
-        raise RuntimeError(f'JS failed: NSError@{jsresult_err.value}, {code=}, domain={s_domain}, user info={s_uinfo}')
-
-    if not jsresult_id:
-        s_rtype = 'nothing'
-        s_result = 'nil'
-    elif pa.instanceof(jsresult_id, NSString):
-        s_rtype = 'string'
-        s_result = str_from_nsstring(pa, py_typecast(NotNull_VoidP, jsresult_id))
-    elif pa.instanceof(jsresult_id, NSNumber):
-        s_rtype = 'number'
-        s_result = str_from_nsstring(pa, NotNull_VoidP(py_typecast(
-            int, pa.send_message(jsresult_id, b'stringValue', restype=c_void_p))))
-    else:
-        s_rtype = '<unknown type>'
-        s_result = '<unknown>'
