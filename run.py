@@ -129,17 +129,12 @@ class CRet:
     Str = type[c_wchar]
     Py_Str = str
 
-    _IntegralBase = Union[
+    Integral = Union[
         type[c_byte], type[c_ubyte], type[c_short], type[c_ushort], type[c_int], type[c_int8],
         type[c_int16], type[c_int32], type[c_int64], type[c_uint], type[c_uint8], type[c_uint16],
         type[c_uint32], type[c_uint64], type[c_long], type[c_ulong], type[c_longlong], type[c_ulonglong],
         type[c_size_t], type[c_ssize_t],
     ]
-    if sys.version_info >= (3, 12):
-        from ctypes import c_time_t
-        Integral = Union[_IntegralBase, type[c_time_t]]
-    else:
-        Integral = _IntegralBase
     Py_Integral = int
 
     CharSeq = type[c_char_p]
@@ -226,11 +221,11 @@ class PyNeApple:
     @overload
     def send_message(self, obj: c_void_p, sel_name: bytes, *args, restype: CRet.Boolean, argtypes: tuple[type, ...], is_super: bool = False) -> bool: ...
     @overload
-    def send_message(self, obj: c_void_p, sel_name: bytes, *args, restype: CRet.Char, argtypes: tuple[type, ...], is_super: bool = False) -> CRet.Py_Char: ...
+    def send_message(self, obj: c_void_p, sel_name: bytes, *args, restype: CRet.Char, argtypes: tuple[type, ...], is_super: bool = False) -> bytes: ...
     @overload
-    def send_message(self, obj: c_void_p, sel_name: bytes, *args, restype: CRet.Str, argtypes: tuple[type, ...], is_super: bool = False) -> CRet.Py_Str: ...
+    def send_message(self, obj: c_void_p, sel_name: bytes, *args, restype: CRet.Str, argtypes: tuple[type, ...], is_super: bool = False) -> str: ...
     @overload
-    def send_message(self, obj: c_void_p, sel_name: bytes, *args, restype: CRet.Integral, argtypes: tuple[type, ...], is_super: bool = False) -> CRet.Py_Integral: ...
+    def send_message(self, obj: c_void_p, sel_name: bytes, *args, restype: CRet.Integral, argtypes: tuple[type, ...], is_super: bool = False) -> int: ...
     @overload
     def send_message(self, obj: c_void_p, sel_name: bytes, *args, restype: CRet.CharSeq, argtypes: tuple[type, ...], is_super: bool = False) -> CRet.Py_CharSeq: ...
     @overload
@@ -242,7 +237,7 @@ class PyNeApple:
     @overload
     def send_message(self, obj: c_void_p, sel_name: bytes, *, restype: CRet.Boolean, is_super: bool = False) -> bool: ...
     @overload
-    def send_message(self, obj: c_void_p, sel_name: bytes, *, restype: CRet.Char, is_super: bool = False) -> CRet.Py_Char: ...
+    def send_message(self, obj: c_void_p, sel_name: bytes, *, restype: CRet.Char, is_super: bool = False) -> bytes: ...
     @overload
     def send_message(self, obj: c_void_p, sel_name: bytes, *, restype: CRet.Str, is_super: bool = False) -> CRet.Py_Str: ...
     @overload
