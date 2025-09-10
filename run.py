@@ -281,7 +281,9 @@ class PyNeApple:
         return cfn_at(self.pobjc_msgSend, restype, c_void_p, c_void_p, *argtypes)(obj, sel, *args)
 
     def safe_new_object(self, cls: c_void_p, init_name: bytes = b'init', *args, argtypes: tuple[type, ...] = ()) -> NotNull_VoidP:
-        return NotNull_VoidP(c_void_p(self.send_message(obj, init_name, restype=c_void_p, *args, argtypes=argtypes)).value)
+        obj = c_void_p(self.send_message(cls, b'alloc', restype=c_void_p))
+        obj = c_void_p(self.send_message(obj, init_name, restype=c_void_p, *args, argtypes=argtypes))
+        return NotNull_VoidP(obj.value)
 
     def safe_objc_getClass(self, name: bytes) -> NotNull_VoidP:
         Cls = c_void_p(self.objc_getClass(name))
