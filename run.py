@@ -231,10 +231,7 @@ class PyNeApple:
         return self._stack.enter_context(self.dlsym_of_lib(path, mode=mode))
 
     def load_framework_from_path(self, fwk_name: str, fwk_path: Optional[str] = None, mode=os.RTLD_LAZY) -> DLSYM_FUNC:
-        if not fwk_path:
-            fwk_path = PyNeApple.path_to_framework(fwk_name)
-            if not fwk_path:
-                raise ValueError(f'Could not find framework {fwk_name}, please provide a valid path')
+        fwk_path = PyNeApple.path_to_framework(fwk_name)
         if fwk := self._fwks.get(fwk_name):
             return fwk
         ret = self._fwks[fwk_name] = self.open_dylib(fwk_path.encode(), mode)
