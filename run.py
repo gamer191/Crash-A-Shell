@@ -373,21 +373,6 @@ class CGRect(Structure):
     )
 
 
-VOIDP_ARGTYPE = Optional[int]
-T = TypeVar('T')
-
-
-@overload
-def str_from_nsstring(pa: PyNeApple, nsstr: NotNull_VoidP) -> str: ...
-@overload
-def str_from_nsstring(pa: PyNeApple, nsstr: c_void_p, *, default: T = None) -> Union[str, T]: ...
-
-
-def str_from_nsstring(pa: PyNeApple, nsstr: Union[c_void_p, NotNull_VoidP], *, default: T = None) -> Union[str, T]:
-    return py_typecast(bytes, pa.send_message(
-        nsstr, b'UTF8String', restype=c_char_p)).decode() if nsstr.value else default
-
-navidg_cbdct: 'PFC_NaviDelegate.CBDICT_TYPE' = {}
 with PyNeApple() as pa:
     pa.load_framework_from_path('WebKit')
     p_webview = pa.safe_new_object(
