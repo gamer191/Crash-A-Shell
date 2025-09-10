@@ -399,15 +399,13 @@ with PyNeApple() as pa:
                 cb()
 
     pa.load_framework_from_path('Foundation')
-    cf = pa.load_framework_from_path('CoreFoundation')
     pa.load_framework_from_path('WebKit')
 
-    lstop = cfn_at(cf(b'CFRunLoopStop').value, None, c_void_p)
-    lrun = cfn_at(cf(b'CFRunLoopRun').value, None)
-    getmain = cfn_at(cf(b'CFRunLoopGetMain').value, c_void_p)
-    mainloop = getmain()
-    kcf_true = c_void_p.from_address(cf(b'kCFBooleanTrue').value)
-
+    p_webview = pa.safe_new_object(
+        pa.safe_objc_getClass(b'WKWebView'), b'initWithFrame:configuration:',
+        CGRect(), pa.safe_new_object(c_void_p(pa.objc_getClass(b'WKWebViewConfiguration'))),
+        argtypes=(CGRect, c_void_p))
+    breakpoint()
     Py_NaviDg = pa.objc_allocateClassPair(pa.safe_objc_getClass(b'NSObject'), b'PyForeignClass_NavigationDelegate', 0)
     if not Py_NaviDg:
         raise RuntimeError('Failed to allocate class PyForeignClass_NavigationDelegate, did you register twice?')
@@ -418,7 +416,3 @@ with PyNeApple() as pa:
     pa.class_addProtocol(Py_NaviDg, pa.objc_getProtocol(b'WKNavigationDelegate'))
     pa.objc_registerClassPair(Py_NaviDg)
 
-    p_webview = pa.safe_new_object(
-        pa.safe_objc_getClass(b'WKWebView'), b'initWithFrame:configuration:',
-        CGRect(), pa.safe_new_object(c_void_p(pa.objc_getClass(b'WKWebViewConfiguration'))),
-        argtypes=(CGRect, c_void_p))
