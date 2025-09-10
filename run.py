@@ -94,13 +94,9 @@ DLSYM_FUNC = Callable[[bytes], NotNull_VoidP]
 
 def dlsym_factory(ldl_openmode: int = os.RTLD_NOW):
     ldl = CDLL(find_library('dl'), mode=ldl_openmode)
-    # void *dlopen(const char *file, int mode);
     fn_dlopen = setup_signature(ldl.dlopen, c_void_p, c_char_p, c_int)
-    # void *dlsym(void *restrict handle, const char *restrict name);
     fn_dlsym = setup_signature(ldl.dlsym, c_void_p, c_void_p, c_char_p)
-    # int dlclose(void *handle);
     fn_dlclose = setup_signature(ldl.dlclose, c_int, c_void_p)
-    # char *dlerror(void);
     fn_dlerror = setup_signature(ldl.dlerror, c_char_p)
 
     @contextmanager
