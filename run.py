@@ -751,7 +751,7 @@ return `:.:${document.URL}: ${pot}`;
             argtypes=(c_void_p, c_void_p, c_void_p, c_void_p, POINTER(ObjCBlock)))
 
         lrun()
-
+    breakpoint()
     if jsresult_err:
         code = pa.send_message(jsresult_err, b'code', restype=c_long)
         s_domain = str_from_nsstring(pa, c_void_p(pa.send_message(
