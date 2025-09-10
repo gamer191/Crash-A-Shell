@@ -401,14 +401,6 @@ with PyNeApple() as pa:
     pa.load_framework_from_path('Foundation')
     cf = pa.load_framework_from_path('CoreFoundation')
     pa.load_framework_from_path('WebKit')
-    NSDictionary = pa.safe_objc_getClass(b'NSDictionary')
-    NSString = pa.safe_objc_getClass(b'NSString')
-    NSNumber = pa.safe_objc_getClass(b'NSNumber')
-    NSObject = pa.safe_objc_getClass(b'NSObject')
-    NSURL = pa.safe_objc_getClass(b'NSURL')
-    WKContentWorld = pa.safe_objc_getClass(b'WKContentWorld')
-    WKWebView = pa.safe_objc_getClass(b'WKWebView')
-    WKWebViewConfiguration = c_void_p(pa.objc_getClass(b'WKWebViewConfiguration'))
 
     lstop = cfn_at(cf(b'CFRunLoopStop').value, None, c_void_p)
     lrun = cfn_at(cf(b'CFRunLoopRun').value, None)
@@ -416,7 +408,7 @@ with PyNeApple() as pa:
     mainloop = getmain()
     kcf_true = c_void_p.from_address(cf(b'kCFBooleanTrue').value)
 
-    Py_NaviDg = pa.objc_allocateClassPair(NSObject, b'PyForeignClass_NavigationDelegate', 0)
+    Py_NaviDg = pa.objc_allocateClassPair(pa.safe_objc_getClass(b'NSObject'), b'PyForeignClass_NavigationDelegate', 0)
     if not Py_NaviDg:
         raise RuntimeError('Failed to allocate class PyForeignClass_NavigationDelegate, did you register twice?')
     pa.class_addMethod(
@@ -427,7 +419,7 @@ with PyNeApple() as pa:
     pa.objc_registerClassPair(Py_NaviDg)
 
     with ExitStack() as exsk:
-        p_cfg = pa.safe_new_object(WKWebViewConfiguration)
+        p_cfg = pa.safe_new_object(c_void_p(pa.objc_getClass(b'WKWebViewConfiguration')))
         exsk.callback(pa.send_message, p_cfg, b'release')
 
         rp_pref = c_void_p(pa.send_message(p_cfg, b'preferences', restype=c_void_p))
@@ -435,7 +427,7 @@ with PyNeApple() as pa:
             rp_pref, b'setJavaScriptCanOpenWindowsAutomatically:',
             c_byte(1), argtypes=(c_byte,))
         p_setkey0 = pa.safe_new_object(
-            NSString, b'initWithUTF8String:', b'allowFileAccessFromFileURLs',
+            pa.safe_objc_getClass(b'NSString'), b'initWithUTF8String:', b'allowFileAccessFromFileURLs',
             argtypes=(c_char_p, ))
         exsk.callback(pa.send_message, p_setkey0, b'release')
         pa.send_message(
@@ -444,7 +436,7 @@ with PyNeApple() as pa:
             argtypes=(c_void_p, c_void_p))
         rp_pref = None
         p_setkey1 = pa.safe_new_object(
-            NSString, b'initWithUTF8String:', b'allowUniversalAccessFromFileURLs',
+            pa.safe_objc_getClass(b'NSString'), b'initWithUTF8String:', b'allowUniversalAccessFromFileURLs',
             argtypes=(c_char_p, ))
         exsk.callback(pa.send_message, p_setkey1, b'release')
         pa.send_message(
@@ -452,6 +444,6 @@ with PyNeApple() as pa:
             kcf_true, p_setkey1,
             argtypes=(c_void_p, c_void_p))
         p_webview = pa.safe_new_object(
-            WKWebView, b'initWithFrame:configuration:',
+            pa.safe_objc_getClass(b'WKWebView'), b'initWithFrame:configuration:',
             CGRect(), p_cfg,
             argtypes=(CGRect, c_void_p))
