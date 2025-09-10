@@ -387,7 +387,7 @@ def str_from_nsstring(pa: PyNeApple, nsstr: Union[c_void_p, NotNull_VoidP], *, d
     return py_typecast(bytes, pa.send_message(
         nsstr, b'UTF8String', restype=c_char_p)).decode() if nsstr.value else default
 
-
+breakpoint()
 navidg_cbdct: 'PFC_NaviDelegate.CBDICT_TYPE' = {}
 with PyNeApple() as pa:
     class PFC_NaviDelegate:
@@ -461,34 +461,3 @@ with PyNeApple() as pa:
             CGRect(), p_cfg,
             argtypes=(CGRect, c_void_p))
         pa.release_on_exit(p_webview)
-    breakpoint()
-    p_navidg = pa.safe_new_object(Py_NaviDg)
-    pa.release_on_exit(p_navidg)
-    pa.send_message(
-        p_webview, b'setNavigationDelegate:',
-        p_navidg, argtypes=(c_void_p, ))
-
-    with ExitStack() as exsk:
-        ps_html = pa.safe_new_object(
-            NSString, b'initWithUTF8String:', rb'''<!DOCTYPE html><html lang="en"><head><title></title></head><body></body></html>''',
-            argtypes=(c_char_p, ))
-        exsk.callback(pa.send_message, ps_html, b'release')
-        ps_base_url = pa.safe_new_object(
-            NSString, b'initWithUTF8String:', rb'''https://www.youtube.com/robots.txt''',
-            argtypes=(c_char_p, ))
-        exsk.callback(pa.send_message, ps_base_url, b'release')
-        purl_base = pa.safe_new_object(
-            NSURL, b'initWithString:', ps_base_url,
-            argtypes=(c_void_p, ))
-        exsk.callback(pa.send_message, purl_base, b'release')
-
-        rp_navi = NotNull_VoidP(pa.send_message(
-            p_webview, b'loadHTMLString:baseURL:', ps_html, purl_base,
-            restype=c_void_p, argtypes=(c_void_p, c_void_p)) or 0)
-
-        def cb_navi_done():
-            lstop(mainloop)
-
-        navidg_cbdct[rp_navi.value] = cb_navi_done
-
-        lrun()
