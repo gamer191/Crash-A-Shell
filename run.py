@@ -139,12 +139,6 @@ class PyNeApple:
         'sel_registerName',
     )
 
-    @staticmethod
-    def path_to_framework(fwk_name: str, use_findlib: bool = False) -> Optional[str]:
-        if use_findlib:
-            return find_library(fwk_name)
-        return f'/System/Library/Frameworks/{fwk_name}.framework/{fwk_name}'
-
     def __init__(self):
         self._init = False
 
@@ -186,13 +180,6 @@ class PyNeApple:
 
     def open_dylib(self, path: bytes, mode=os.RTLD_LAZY) -> DLSYM_FUNC:
         return self._stack.enter_context(self.dlsym_of_lib(path, mode=mode))
-
-    def load_framework_from_path(self, fwk_name: str, fwk_path: Optional[str] = None, mode=os.RTLD_LAZY) -> DLSYM_FUNC:
-        fwk_path = PyNeApple.path_to_framework(fwk_name)
-        if fwk := self._fwks.get(fwk_name):
-            return fwk
-        ret = self._fwks[fwk_name] = self.open_dylib(fwk_path.encode(), mode)
-        return ret
 
     @overload
     def send_message(self, obj: c_void_p, sel_name: bytes, *args, restype: type[c_bool], argtypes: tuple[type, ...], is_super: bool = False) -> bool: ...
