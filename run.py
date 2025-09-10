@@ -389,117 +389,117 @@ def str_from_nsstring(pa: PyNeApple, nsstr: Union[c_void_p, NotNull_VoidP], *, d
 
 
 def main():
-    navidg_cbdct: 'PFC_NaviDelegate.CBDICT_TYPE' = {}
-    try:
-        with PyNeApple() as pa:
-            class PFC_NaviDelegate:
-                CBDICT_TYPE = dict[int, Callable[[], None]]
-                SIGNATURE_WEBVIEW_DIDFINISHNAVIGATION = b'v@:@@'
+navidg_cbdct: 'PFC_NaviDelegate.CBDICT_TYPE' = {}
+try:
+    with PyNeApple() as pa:
+        class PFC_NaviDelegate:
+            CBDICT_TYPE = dict[int, Callable[[], None]]
+            SIGNATURE_WEBVIEW_DIDFINISHNAVIGATION = b'v@:@@'
 
-                @staticmethod
-                def webView0_didFinishNavigation1(this: VOIDP_ARGTYPE, sel: VOIDP_ARGTYPE, rp_webview: VOIDP_ARGTYPE, rp_navi: VOIDP_ARGTYPE) -> None:
-                    if cb := navidg_cbdct.get(rp_navi or 0):
-                        cb()
+            @staticmethod
+            def webView0_didFinishNavigation1(this: VOIDP_ARGTYPE, sel: VOIDP_ARGTYPE, rp_webview: VOIDP_ARGTYPE, rp_navi: VOIDP_ARGTYPE) -> None:
+                if cb := navidg_cbdct.get(rp_navi or 0):
+                    cb()
 
-            pa.load_framework_from_path('Foundation')
-            cf = pa.load_framework_from_path('CoreFoundation')
-            pa.load_framework_from_path('WebKit')
-            NSDictionary = pa.safe_objc_getClass(b'NSDictionary')
-            NSString = pa.safe_objc_getClass(b'NSString')
-            NSNumber = pa.safe_objc_getClass(b'NSNumber')
-            NSObject = pa.safe_objc_getClass(b'NSObject')
-            NSURL = pa.safe_objc_getClass(b'NSURL')
-            WKContentWorld = pa.safe_objc_getClass(b'WKContentWorld')
-            WKWebView = pa.safe_objc_getClass(b'WKWebView')
-            WKWebViewConfiguration = c_void_p(pa.objc_getClass(b'WKWebViewConfiguration'))
+        pa.load_framework_from_path('Foundation')
+        cf = pa.load_framework_from_path('CoreFoundation')
+        pa.load_framework_from_path('WebKit')
+        NSDictionary = pa.safe_objc_getClass(b'NSDictionary')
+        NSString = pa.safe_objc_getClass(b'NSString')
+        NSNumber = pa.safe_objc_getClass(b'NSNumber')
+        NSObject = pa.safe_objc_getClass(b'NSObject')
+        NSURL = pa.safe_objc_getClass(b'NSURL')
+        WKContentWorld = pa.safe_objc_getClass(b'WKContentWorld')
+        WKWebView = pa.safe_objc_getClass(b'WKWebView')
+        WKWebViewConfiguration = c_void_p(pa.objc_getClass(b'WKWebViewConfiguration'))
 
-            lstop = cfn_at(cf(b'CFRunLoopStop').value, None, c_void_p)
-            lrun = cfn_at(cf(b'CFRunLoopRun').value, None)
-            getmain = cfn_at(cf(b'CFRunLoopGetMain').value, c_void_p)
-            mainloop = getmain()
-            kcf_true = c_void_p.from_address(cf(b'kCFBooleanTrue').value)
+        lstop = cfn_at(cf(b'CFRunLoopStop').value, None, c_void_p)
+        lrun = cfn_at(cf(b'CFRunLoopRun').value, None)
+        getmain = cfn_at(cf(b'CFRunLoopGetMain').value, c_void_p)
+        mainloop = getmain()
+        kcf_true = c_void_p.from_address(cf(b'kCFBooleanTrue').value)
 
-            Py_NaviDg = pa.objc_allocateClassPair(NSObject, b'PyForeignClass_NavigationDelegate', 0)
-            if not Py_NaviDg:
-                raise RuntimeError('Failed to allocate class PyForeignClass_NavigationDelegate, did you register twice?')
-            pa.class_addMethod(
-                Py_NaviDg, pa.sel_registerName(b'webView:didFinishNavigation:'),
-                as_fnptr(PFC_NaviDelegate.webView0_didFinishNavigation1, None, c_void_p, c_void_p, c_void_p, c_void_p),
-                PFC_NaviDelegate.SIGNATURE_WEBVIEW_DIDFINISHNAVIGATION)
-            pa.class_addProtocol(Py_NaviDg, pa.objc_getProtocol(b'WKNavigationDelegate'))
-            pa.objc_registerClassPair(Py_NaviDg)
+        Py_NaviDg = pa.objc_allocateClassPair(NSObject, b'PyForeignClass_NavigationDelegate', 0)
+        if not Py_NaviDg:
+            raise RuntimeError('Failed to allocate class PyForeignClass_NavigationDelegate, did you register twice?')
+        pa.class_addMethod(
+            Py_NaviDg, pa.sel_registerName(b'webView:didFinishNavigation:'),
+            as_fnptr(PFC_NaviDelegate.webView0_didFinishNavigation1, None, c_void_p, c_void_p, c_void_p, c_void_p),
+            PFC_NaviDelegate.SIGNATURE_WEBVIEW_DIDFINISHNAVIGATION)
+        pa.class_addProtocol(Py_NaviDg, pa.objc_getProtocol(b'WKNavigationDelegate'))
+        pa.objc_registerClassPair(Py_NaviDg)
 
-            with ExitStack() as exsk:
-                p_cfg = pa.safe_new_object(WKWebViewConfiguration)
-                exsk.callback(pa.send_message, p_cfg, b'release')
+        with ExitStack() as exsk:
+            p_cfg = pa.safe_new_object(WKWebViewConfiguration)
+            exsk.callback(pa.send_message, p_cfg, b'release')
 
-                rp_pref = c_void_p(pa.send_message(p_cfg, b'preferences', restype=c_void_p))
-                if not rp_pref.value:
-                    raise RuntimeError('Failed to get preferences from WKWebViewConfiguration')
-                pa.send_message(
-                    rp_pref, b'setJavaScriptCanOpenWindowsAutomatically:',
-                    c_byte(1), argtypes=(c_byte,))
-                p_setkey0 = pa.safe_new_object(
-                    NSString, b'initWithUTF8String:', b'allowFileAccessFromFileURLs',
-                    argtypes=(c_char_p, ))
-                exsk.callback(pa.send_message, p_setkey0, b'release')
-                pa.send_message(
-                    rp_pref, b'setValue:forKey:',
-                    kcf_true, p_setkey0,
-                    argtypes=(c_void_p, c_void_p))
-                rp_pref = None
-
-                p_setkey1 = pa.safe_new_object(
-                    NSString, b'initWithUTF8String:', b'allowUniversalAccessFromFileURLs',
-                    argtypes=(c_char_p, ))
-                exsk.callback(pa.send_message, p_setkey1, b'release')
-                pa.send_message(
-                    p_cfg, b'setValue:forKey:',
-                    kcf_true, p_setkey1,
-                    argtypes=(c_void_p, c_void_p))
-
-                p_webview = pa.safe_new_object(
-                    WKWebView, b'initWithFrame:configuration:',
-                    CGRect(), p_cfg,
-                    argtypes=(CGRect, c_void_p))
-                pa.release_on_exit(p_webview)
-
-            p_navidg = pa.safe_new_object(Py_NaviDg)
-            pa.release_on_exit(p_navidg)
+            rp_pref = c_void_p(pa.send_message(p_cfg, b'preferences', restype=c_void_p))
+            if not rp_pref.value:
+                raise RuntimeError('Failed to get preferences from WKWebViewConfiguration')
             pa.send_message(
-                p_webview, b'setNavigationDelegate:',
-                p_navidg, argtypes=(c_void_p, ))
+                rp_pref, b'setJavaScriptCanOpenWindowsAutomatically:',
+                c_byte(1), argtypes=(c_byte,))
+            p_setkey0 = pa.safe_new_object(
+                NSString, b'initWithUTF8String:', b'allowFileAccessFromFileURLs',
+                argtypes=(c_char_p, ))
+            exsk.callback(pa.send_message, p_setkey0, b'release')
+            pa.send_message(
+                rp_pref, b'setValue:forKey:',
+                kcf_true, p_setkey0,
+                argtypes=(c_void_p, c_void_p))
+            rp_pref = None
 
-            with ExitStack() as exsk:
-                ps_html = pa.safe_new_object(
-                    NSString, b'initWithUTF8String:', rb'''<!DOCTYPE html><html lang="en"><head><title></title></head><body></body></html>''',
-                    argtypes=(c_char_p, ))
-                exsk.callback(pa.send_message, ps_html, b'release')
-                ps_base_url = pa.safe_new_object(
-                    NSString, b'initWithUTF8String:', rb'''https://www.youtube.com/robots.txt''',
-                    argtypes=(c_char_p, ))
-                exsk.callback(pa.send_message, ps_base_url, b'release')
-                purl_base = pa.safe_new_object(
-                    NSURL, b'initWithString:', ps_base_url,
-                    argtypes=(c_void_p, ))
-                exsk.callback(pa.send_message, purl_base, b'release')
+            p_setkey1 = pa.safe_new_object(
+                NSString, b'initWithUTF8String:', b'allowUniversalAccessFromFileURLs',
+                argtypes=(c_char_p, ))
+            exsk.callback(pa.send_message, p_setkey1, b'release')
+            pa.send_message(
+                p_cfg, b'setValue:forKey:',
+                kcf_true, p_setkey1,
+                argtypes=(c_void_p, c_void_p))
 
-                rp_navi = NotNull_VoidP(pa.send_message(
-                    p_webview, b'loadHTMLString:baseURL:', ps_html, purl_base,
-                    restype=c_void_p, argtypes=(c_void_p, c_void_p)) or 0)
+            p_webview = pa.safe_new_object(
+                WKWebView, b'initWithFrame:configuration:',
+                CGRect(), p_cfg,
+                argtypes=(CGRect, c_void_p))
+            pa.release_on_exit(p_webview)
 
-                def cb_navi_done():
-                    lstop(mainloop)
+        p_navidg = pa.safe_new_object(Py_NaviDg)
+        pa.release_on_exit(p_navidg)
+        pa.send_message(
+            p_webview, b'setNavigationDelegate:',
+            p_navidg, argtypes=(c_void_p, ))
 
-                navidg_cbdct[rp_navi.value] = cb_navi_done
+        with ExitStack() as exsk:
+            ps_html = pa.safe_new_object(
+                NSString, b'initWithUTF8String:', rb'''<!DOCTYPE html><html lang="en"><head><title></title></head><body></body></html>''',
+                argtypes=(c_char_p, ))
+            exsk.callback(pa.send_message, ps_html, b'release')
+            ps_base_url = pa.safe_new_object(
+                NSString, b'initWithUTF8String:', rb'''https://www.youtube.com/robots.txt''',
+                argtypes=(c_char_p, ))
+            exsk.callback(pa.send_message, ps_base_url, b'release')
+            purl_base = pa.safe_new_object(
+                NSURL, b'initWithString:', ps_base_url,
+                argtypes=(c_void_p, ))
+            exsk.callback(pa.send_message, purl_base, b'release')
 
-                lrun()
+            rp_navi = NotNull_VoidP(pa.send_message(
+                p_webview, b'loadHTMLString:baseURL:', ps_html, purl_base,
+                restype=c_void_p, argtypes=(c_void_p, c_void_p)) or 0)
 
-            jsresult_id = c_void_p()
-            jsresult_err = c_void_p()
-            with ExitStack() as exsk:
-                ps_script = pa.safe_new_object(
-                    NSString, b'initWithUTF8String:', rb'''
+            def cb_navi_done():
+                lstop(mainloop)
+
+            navidg_cbdct[rp_navi.value] = cb_navi_done
+
+            lrun()
+
+        jsresult_id = c_void_p()
+        jsresult_err = c_void_p()
+        with ExitStack() as exsk:
+            ps_script = pa.safe_new_object(
+                NSString, b'initWithUTF8String:', rb'''
 return await (async ()=>{  // IIAFE
 try {
 // pot for browser, navigate to https://www.youtube.com/robots.txt first
@@ -510,157 +510,157 @@ const YT_BASE_URL = 'https://www.youtube.com';
 const GOOG_BASE_URL = 'https://jnn-pa.googleapis.com';
 
 function buildURL(endpointName, useYouTubeAPI) {
-    return `${useYouTubeAPI ? YT_BASE_URL : GOOG_BASE_URL}/${useYouTubeAPI ? 'api/jnn/v1' : '$rpc/google.internal.waa.v1.Waa'}/${endpointName}`;
+return `${useYouTubeAPI ? YT_BASE_URL : GOOG_BASE_URL}/${useYouTubeAPI ? 'api/jnn/v1' : '$rpc/google.internal.waa.v1.Waa'}/${endpointName}`;
 }
 
 function u8ToBase64(u8, base64url = false) {
-    const result = btoa(String.fromCharCode(...u8));
+const result = btoa(String.fromCharCode(...u8));
 
-    if (base64url) {
-        return result
-            .replace(/\+/g, '-')
-            .replace(/\//g, '_');
-    }
+if (base64url) {
+    return result
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_');
+}
 
-    return result;
+return result;
 }
 
 const base64urlToBase64Map = {
-    '-': '+',
-    _: '/',
-    '.': '='
+'-': '+',
+_: '/',
+'.': '='
 };
 
 const base64urlCharRegex = /[-_.]/g;
 
 function base64ToU8(base64) {
-    let base64Mod;
+let base64Mod;
 
-    if (base64urlCharRegex.test(base64)) {
-        base64Mod = base64.replace(base64urlCharRegex, function (match) {
-            return base64urlToBase64Map[match];
-        });
-    } else {
-        base64Mod = base64;
-    }
+if (base64urlCharRegex.test(base64)) {
+    base64Mod = base64.replace(base64urlCharRegex, function (match) {
+        return base64urlToBase64Map[match];
+    });
+} else {
+    base64Mod = base64;
+}
 
-    base64Mod = atob(base64Mod);
+base64Mod = atob(base64Mod);
 
-    return new Uint8Array(
-        [...base64Mod].map(
-            (char) => char.charCodeAt(0)
-        )
-    );
+return new Uint8Array(
+    [...base64Mod].map(
+        (char) => char.charCodeAt(0)
+    )
+);
 }
 
 function descramble(scrambledChallenge) {
-    const buffer = base64ToU8(scrambledChallenge);
-    if (buffer.length)
-        return new TextDecoder().decode(buffer.map((b) => b + 97));
+const buffer = base64ToU8(scrambledChallenge);
+if (buffer.length)
+    return new TextDecoder().decode(buffer.map((b) => b + 97));
 }
 
 function parseChallengeData(rawData) {
-    let challengeData = [];
-    if (rawData.length > 1 && typeof rawData[1] === 'string') {
-        const descrambled = descramble(rawData[1]);
-        challengeData = JSON.parse(descrambled || '[]');
-    } else if (rawData.length && typeof rawData[0] === 'object') {
-        challengeData = rawData[0];
-    }
+let challengeData = [];
+if (rawData.length > 1 && typeof rawData[1] === 'string') {
+    const descrambled = descramble(rawData[1]);
+    challengeData = JSON.parse(descrambled || '[]');
+} else if (rawData.length && typeof rawData[0] === 'object') {
+    challengeData = rawData[0];
+}
 
-    const [messageId, wrappedScript, wrappedUrl, interpreterHash, program, globalName, , clientExperimentsStateBlob] = challengeData;
-    const privateDoNotAccessOrElseSafeScriptWrappedValue = Array.isArray(wrappedScript) ? wrappedScript.find((value) => value && typeof value === 'string') : null;
-    const privateDoNotAccessOrElseTrustedResourceUrlWrappedValue = Array.isArray(wrappedUrl) ? wrappedUrl.find((value) => value && typeof value === 'string') : null;
+const [messageId, wrappedScript, wrappedUrl, interpreterHash, program, globalName, , clientExperimentsStateBlob] = challengeData;
+const privateDoNotAccessOrElseSafeScriptWrappedValue = Array.isArray(wrappedScript) ? wrappedScript.find((value) => value && typeof value === 'string') : null;
+const privateDoNotAccessOrElseTrustedResourceUrlWrappedValue = Array.isArray(wrappedUrl) ? wrappedUrl.find((value) => value && typeof value === 'string') : null;
 
-    return {
-        messageId,
-        interpreterJavascript: {
-            privateDoNotAccessOrElseSafeScriptWrappedValue,
-            privateDoNotAccessOrElseTrustedResourceUrlWrappedValue
-        },
-        interpreterHash,
-        program,
-        globalName,
-        clientExperimentsStateBlob
-    };
+return {
+    messageId,
+    interpreterJavascript: {
+        privateDoNotAccessOrElseSafeScriptWrappedValue,
+        privateDoNotAccessOrElseTrustedResourceUrlWrappedValue
+    },
+    interpreterHash,
+    program,
+    globalName,
+    clientExperimentsStateBlob
+};
 }
 
 function isBrowser() {
-    const isBrowser = typeof window !== 'undefined'
-        && typeof window.document !== 'undefined'
-        && typeof window.document.createElement !== 'undefined'
-        && typeof window.HTMLElement !== 'undefined'
-        && typeof window.navigator !== 'undefined'
-        && typeof window.getComputedStyle === 'function'
-        && typeof window.requestAnimationFrame === 'function'
-        && typeof window.matchMedia === 'function';
+const isBrowser = typeof window !== 'undefined'
+    && typeof window.document !== 'undefined'
+    && typeof window.document.createElement !== 'undefined'
+    && typeof window.HTMLElement !== 'undefined'
+    && typeof window.navigator !== 'undefined'
+    && typeof window.getComputedStyle === 'function'
+    && typeof window.requestAnimationFrame === 'function'
+    && typeof window.matchMedia === 'function';
 
-    const hasValidWindow = Object.getOwnPropertyDescriptor(globalThis, 'window')?.get?.toString().includes('[native code]') ?? false;
+const hasValidWindow = Object.getOwnPropertyDescriptor(globalThis, 'window')?.get?.toString().includes('[native code]') ?? false;
 
-    return isBrowser && hasValidWindow;
+return isBrowser && hasValidWindow;
 }
 
 let headers = {
-    'content-type': 'application/json+protobuf',
-    'x-goog-api-key': GOOG_API_KEY,
-    'x-user-agent': 'grpc-web-javascript/0.1'
+'content-type': 'application/json+protobuf',
+'x-goog-api-key': GOOG_API_KEY,
+'x-user-agent': 'grpc-web-javascript/0.1'
 };
 if (!isBrowser())
-    headers['user-agent'] = USER_AGENT;
+headers['user-agent'] = USER_AGENT;
 
 // fetch challenge
 const payload = [REQUEST_KEY];
 const resp = await fetch(buildURL('Create', false), {
-    method: 'POST',
-    headers: headers,
-    body: JSON.stringify(payload)
+method: 'POST',
+headers: headers,
+body: JSON.stringify(payload)
 })
 
 if (!resp.ok)
-    throw new Error('Failed to fetch challenge');
+throw new Error('Failed to fetch challenge');
 
 const rawDataJson = await resp.json();
 const bgChallenge = parseChallengeData(rawDataJson);
 if (!bgChallenge)
-    throw new Error('Could not get challenge');
+throw new Error('Could not get challenge');
 
 
 const interpreterJavascript = bgChallenge.interpreterJavascript.privateDoNotAccessOrElseSafeScriptWrappedValue;
 
 if (interpreterJavascript) {
-    new Function(interpreterJavascript)();
+new Function(interpreterJavascript)();
 } else
-    throw new Error('Could not load VM');
+throw new Error('Could not load VM');
 
 const bg = ((vm, program, userInteractionElement) => {
-    if (!vm)
-        throw new Error('VM not found');
-    if (!vm.a)
-        throw new Error('VM init function not found');
-    let vmFns;
-    const vmFunctionsCallback = (asyncSnapshotFunction, shutdownFunction, passEventFunction, checkCameraFunction) => {
-        vmFns = { asyncSnapshotFunction, shutdownFunction, passEventFunction, checkCameraFunction };
-    };
-    const syncSnapshotFunction = vm.a(program, vmFunctionsCallback, true, userInteractionElement, () => {/** no-op */ }, [[], []])[0]
-    return { syncSnapshotFunction, vmFns };
+if (!vm)
+    throw new Error('VM not found');
+if (!vm.a)
+    throw new Error('VM init function not found');
+let vmFns;
+const vmFunctionsCallback = (asyncSnapshotFunction, shutdownFunction, passEventFunction, checkCameraFunction) => {
+    vmFns = { asyncSnapshotFunction, shutdownFunction, passEventFunction, checkCameraFunction };
+};
+const syncSnapshotFunction = vm.a(program, vmFunctionsCallback, true, userInteractionElement, () => {/** no-op */ }, [[], []])[0]
+return { syncSnapshotFunction, vmFns };
 })(globalThis[bgChallenge.globalName], bgChallenge.program, bgChallenge.userInteractionElement);
 
 async function snapshot(vmFns, args, timeout = 3000) {
-    return await Promise.race([
-        new Promise((resolve, reject) => {
-            if (!vmFns.asyncSnapshotFunction)
-                return reject(new Error('Asynchronous snapshot function not found'));
-            vmFns.asyncSnapshotFunction((response) => resolve(response), [
-                args.contentBinding,
-                args.signedTimestamp,
-                args.webPoSignalOutput,
-                args.skipPrivacyBuffer
-            ]);
-        }),
-        new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('VM operation timed out')), timeout)
-        )
-    ]);
+return await Promise.race([
+    new Promise((resolve, reject) => {
+        if (!vmFns.asyncSnapshotFunction)
+            return reject(new Error('Asynchronous snapshot function not found'));
+        vmFns.asyncSnapshotFunction((response) => resolve(response), [
+            args.contentBinding,
+            args.signedTimestamp,
+            args.webPoSignalOutput,
+            args.skipPrivacyBuffer
+        ]);
+    }),
+    new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('VM operation timed out')), timeout)
+    )
+]);
 }
 
 
@@ -669,43 +669,43 @@ const botguardResponse = await snapshot(bg.vmFns, { webPoSignalOutput });
 const generatePayload = [REQUEST_KEY, botguardResponse];
 
 const integrityTokenResponse = await fetch(buildURL('GenerateIT', false), {
-    method: 'POST',
-    headers: headers,
-    body: JSON.stringify(generatePayload)
+method: 'POST',
+headers: headers,
+body: JSON.stringify(generatePayload)
 });
 const integrityTokenJson = await integrityTokenResponse.json();
 const [integrityToken, estimatedTtlSecs, mintRefreshThreshold, websafeFallbackToken] = integrityTokenJson;
 
 const integrityTokenData = {
-    integrityToken,
-    estimatedTtlSecs,
-    mintRefreshThreshold,
-    websafeFallbackToken
+integrityToken,
+estimatedTtlSecs,
+mintRefreshThreshold,
+websafeFallbackToken
 };
 
 const minter = await (async (integrityTokenResponse, webPoSignalOutput_) => {
-    const getMinter = webPoSignalOutput_[0];
+const getMinter = webPoSignalOutput_[0];
 
-    if (!getMinter)
-        throw new Error('PMD:Undefined');
+if (!getMinter)
+    throw new Error('PMD:Undefined');
 
-    if (!integrityTokenResponse.integrityToken)
-        throw new Error('No integrity token provided');
-    const mintCallback = await getMinter(base64ToU8(integrityTokenResponse.integrityToken));
+if (!integrityTokenResponse.integrityToken)
+    throw new Error('No integrity token provided');
+const mintCallback = await getMinter(base64ToU8(integrityTokenResponse.integrityToken));
 
-    if (!(mintCallback instanceof Function))
-        throw new Error('APF:Failed');
-    return async (identifier) => {
-        const res = await ((async (identifier) => {
-            const result = await mintCallback(new TextEncoder().encode(identifier));
-            if (!result)
-                throw new Error('YNJ:Undefined');
-            if (!(result instanceof Uint8Array))
-                throw new Error('ODM:Invalid');
-            return result;
-        })(identifier));
-        return u8ToBase64(res, true);
-    };
+if (!(mintCallback instanceof Function))
+    throw new Error('APF:Failed');
+return async (identifier) => {
+    const res = await ((async (identifier) => {
+        const result = await mintCallback(new TextEncoder().encode(identifier));
+        if (!result)
+            throw new Error('YNJ:Undefined');
+        if (!(result instanceof Uint8Array))
+            throw new Error('ODM:Invalid');
+        return result;
+    })(identifier));
+    return u8ToBase64(res, true);
+};
 })(integrityTokenData, webPoSignalOutput);
 
 
@@ -726,61 +726,57 @@ return `:.:${document.URL}: ${pot}`;
 } catch(e) {return `:E:${document.URL}: ${e}`;}
 })();
 ''',
-                    argtypes=(c_char_p, ))
-                exsk.callback(pa.send_message, ps_script, b'release')
+                argtypes=(c_char_p, ))
+            exsk.callback(pa.send_message, ps_script, b'release')
 
-                pd_jsargs = pa.safe_new_object(NSDictionary)
-                exsk.callback(pa.send_message, pd_jsargs, b'release')
+            pd_jsargs = pa.safe_new_object(NSDictionary)
+            exsk.callback(pa.send_message, pd_jsargs, b'release')
 
-                rp_pageworld = c_void_p(pa.send_message(
-                    WKContentWorld, b'pageWorld',
-                    restype=c_void_p))
+            rp_pageworld = c_void_p(pa.send_message(
+                WKContentWorld, b'pageWorld',
+                restype=c_void_p))
 
-                def completion_handler(self: VOIDP_ARGTYPE, id_result: VOIDP_ARGTYPE, err: VOIDP_ARGTYPE):
-                    nonlocal jsresult_id, jsresult_err
-                    jsresult_id = c_void_p(pa.send_message(c_void_p(id_result or 0), b'copy', restype=c_void_p))
-                    pa.release_on_exit(jsresult_id)
-                    jsresult_err = c_void_p(pa.send_message(c_void_p(err or 0), b'copy', restype=c_void_p))
-                    pa.release_on_exit(jsresult_err)
-                    lstop(mainloop)
+            def completion_handler(self: VOIDP_ARGTYPE, id_result: VOIDP_ARGTYPE, err: VOIDP_ARGTYPE):
+                nonlocal jsresult_id, jsresult_err
+                jsresult_id = c_void_p(pa.send_message(c_void_p(id_result or 0), b'copy', restype=c_void_p))
+                pa.release_on_exit(jsresult_id)
+                jsresult_err = c_void_p(pa.send_message(c_void_p(err or 0), b'copy', restype=c_void_p))
+                pa.release_on_exit(jsresult_err)
+                lstop(mainloop)
 
-                chblock = pa.make_block(completion_handler, None, POINTER(ObjCBlock), c_void_p, c_void_p)
+            chblock = pa.make_block(completion_handler, None, POINTER(ObjCBlock), c_void_p, c_void_p)
 
-                pa.send_message(
-                    # Requires iOS 15.0+, maybe test its availability first?
-                    p_webview, b'callAsyncJavaScript:arguments:inFrame:inContentWorld:completionHandler:',
-                    ps_script, pd_jsargs, c_void_p(None), rp_pageworld, byref(chblock),
-                    argtypes=(c_void_p, c_void_p, c_void_p, c_void_p, POINTER(ObjCBlock)))
+            pa.send_message(
+                # Requires iOS 15.0+, maybe test its availability first?
+                p_webview, b'callAsyncJavaScript:arguments:inFrame:inContentWorld:completionHandler:',
+                ps_script, pd_jsargs, c_void_p(None), rp_pageworld, byref(chblock),
+                argtypes=(c_void_p, c_void_p, c_void_p, c_void_p, POINTER(ObjCBlock)))
 
-                lrun()
+            lrun()
 
-            if jsresult_err:
-                code = pa.send_message(jsresult_err, b'code', restype=c_long)
-                s_domain = str_from_nsstring(pa, c_void_p(pa.send_message(
-                    jsresult_err, b'domain', restype=c_void_p)), default='<unknown>')
-                s_uinfo = str_from_nsstring(pa, c_void_p(pa.send_message(
-                    c_void_p(pa.send_message(jsresult_err, b'userInfo', restype=c_void_p)),
-                    b'description', restype=c_void_p)), default='<no description provided>')
-                raise RuntimeError(f'JS failed: NSError@{jsresult_err.value}, {code=}, domain={s_domain}, user info={s_uinfo}')
+        if jsresult_err:
+            code = pa.send_message(jsresult_err, b'code', restype=c_long)
+            s_domain = str_from_nsstring(pa, c_void_p(pa.send_message(
+                jsresult_err, b'domain', restype=c_void_p)), default='<unknown>')
+            s_uinfo = str_from_nsstring(pa, c_void_p(pa.send_message(
+                c_void_p(pa.send_message(jsresult_err, b'userInfo', restype=c_void_p)),
+                b'description', restype=c_void_p)), default='<no description provided>')
+            raise RuntimeError(f'JS failed: NSError@{jsresult_err.value}, {code=}, domain={s_domain}, user info={s_uinfo}')
 
-            if not jsresult_id:
-                s_rtype = 'nothing'
-                s_result = 'nil'
-            elif pa.instanceof(jsresult_id, NSString):
-                s_rtype = 'string'
-                s_result = str_from_nsstring(pa, py_typecast(NotNull_VoidP, jsresult_id))
-            elif pa.instanceof(jsresult_id, NSNumber):
-                s_rtype = 'number'
-                s_result = str_from_nsstring(pa, NotNull_VoidP(py_typecast(
-                    int, pa.send_message(jsresult_id, b'stringValue', restype=c_void_p))))
-            else:
-                s_rtype = '<unknown type>'
-                s_result = '<unknown>'
-    except Exception:
-        import traceback
-        sys.stderr.write(traceback.format_exc())
-        sys.stderr.flush()
-        return 1
-    return 0
-    
-main()
+        if not jsresult_id:
+            s_rtype = 'nothing'
+            s_result = 'nil'
+        elif pa.instanceof(jsresult_id, NSString):
+            s_rtype = 'string'
+            s_result = str_from_nsstring(pa, py_typecast(NotNull_VoidP, jsresult_id))
+        elif pa.instanceof(jsresult_id, NSNumber):
+            s_rtype = 'number'
+            s_result = str_from_nsstring(pa, NotNull_VoidP(py_typecast(
+                int, pa.send_message(jsresult_id, b'stringValue', restype=c_void_p))))
+        else:
+            s_rtype = '<unknown type>'
+            s_result = '<unknown>'
+except Exception:
+    import traceback
+    sys.stderr.write(traceback.format_exc())
+    sys.stderr.flush()
