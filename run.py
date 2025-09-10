@@ -292,45 +292,6 @@ class PyNeApple:
         return NotNull_VoidP(Cls.value)
 
 
-class ObjCBlockDescBase(Structure):
-    _fields_ = (
-        ('reserved', c_ulong),
-        ('size', c_ulong),
-    )
-
-
-class ObjCBlockDescWithSignature(ObjCBlockDescBase):
-    _fields_ = (('signature', c_char_p), )
-
-
-class ObjCBlock(Structure):
-    _fields_ = (
-        ('isa', c_void_p),
-        ('flags', c_int),
-        ('reserved', c_int),
-        ('invoke', c_void_p),  # FnPtr
-        ('desc', POINTER(ObjCBlockDescBase)),
-    )
-    BLOCK_ST = struct.Struct(b'@PiiPP')
-    BLOCKDESC_SIGNATURE_ST = struct.Struct(b'@LLP')
-    BLOCKDESC_ST = struct.Struct(b'@LL')
-    BLOCK_TYPE = b'@?'
-
-    def __init__(self, pyneapple: PyNeApple, cb: Callable, restype: Optional[type], *argtypes: type, signature: Optional[bytes] = None):
-        f = 0
-        if signature:  # Empty signatures are not acceptable, they should at least be v@?
-            f |= 1 << 30
-            self._desc = ObjCBlockDescWithSignature(reserved=0, size=sizeof(ObjCBlock), signature=signature)
-        else:
-            self._desc = ObjCBlockDescBase(reserved=0, size=sizeof(ObjCBlock))
-        super().__init__(
-            isa=pyneapple.p_NSConcreteMallocBlock,
-            flags=f,
-            reserved=0,
-            invoke=as_fnptr(cb, restype, *argtypes),
-            desc=cast(pointer(self._desc), POINTER(ObjCBlockDescBase)),
-        )
-
 class DoubleDouble(Structure):
     _fields_ = (
         ('x', c_double),
