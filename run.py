@@ -3,7 +3,7 @@ import platform
 import struct
 import sys
 from contextlib import ExitStack, contextmanager
-from ctypes import (CDLL, CFUNCTYPE, POINTER, Structure, byref, c_bool, c_byte,
+from ctypes import (CDLL, CFUNCTYPE, POINTER, Structure, c_bool, c_byte,
                     c_char, c_char_p, c_double, c_float, c_int, c_int8,
                     c_int16, c_int32, c_int64, c_long, c_longdouble,
                     c_longlong, c_short, c_size_t, c_ssize_t, c_ubyte, c_uint,
@@ -13,9 +13,8 @@ from ctypes import (CDLL, CFUNCTYPE, POINTER, Structure, byref, c_bool, c_byte,
 from ctypes.util import find_library
 from functools import wraps
 from stat import S_ISREG
-from typing import Any, Callable, Generator, Optional, TypeVar, Union
+from typing import Any, Callable, Generator, Optional, TypeVar, Union, overload
 from typing import cast as py_typecast
-from typing import overload
 
 T = TypeVar('T')
 
@@ -45,14 +44,11 @@ def setup_signature(c_fn, restype: Optional[type] = None, *argtypes: type):
 
 
 def cfn_at(addr: int, restype: Optional[type] = None, *argtypes: type) -> Callable:
-    argss = ', '.join(str(t) for t in argtypes)
     return CFUNCTYPE(restype, *argtypes)(addr)
 
 
 def as_fnptr(cb: Callable, restype: Optional[type] = None, *argtypes: type) -> c_void_p:
-    argss = ', '.join(str(t) for t in argtypes)
-    fnptr = cast(CFUNCTYPE(restype, *argtypes)(cb), c_void_p)
-    return fnptr
+    return cast(CFUNCTYPE(restype, *argtypes)(cb), c_void_p)
 
 
 class DLError(OSError):
