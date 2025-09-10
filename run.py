@@ -180,8 +180,6 @@ class PyNeApple:
         return f'/System/Library/Frameworks/{fwk_name}.framework/{fwk_name}'
 
     def __init__(self):
-        if platform.uname()[0] != 'Darwin':
-            print('Warning: kernel is not Darwin, PyNeApple might not function correctly')
         self._init = False
 
     def __enter__(self):
