@@ -13,8 +13,7 @@ from ctypes import (CDLL, CFUNCTYPE, POINTER, Structure, c_bool, c_byte,
 from ctypes.util import find_library
 from functools import wraps
 from stat import S_ISREG
-from typing import Any, Callable, Generator, Optional, TypeVar, Union, overload
-from typing import cast as py_typecast
+from typing import Any, Callable, Generator, Optional, TypeVar, Union, cast, overload
 
 T = TypeVar('T')
 
@@ -86,7 +85,7 @@ class NotNull_VoidP(c_void_p):
 
     @property
     def value(self) -> int:
-        return py_typecast(int, super().value)
+        return cast(int, super().value)
 
 
 DLSYM_FUNC = Callable[[bytes], NotNull_VoidP]
