@@ -103,6 +103,17 @@ def dlsym_factory(ldl_openmode: int = os.RTLD_NOW):
     # char *dlerror(void);
     fn_dlerror = setup_signature(ldl.dlerror, c_char_p)
 
+    @contextmanager
+    def dlsym_factory(path: bytes, mode: int = os.RTLD_LAZY) -> Generator[DLSYM_FUNC, None, None]:
+        h_lib = DLError.handle(
+            fn_dlopen(path, mode),
+            b'dlopen', path.decode(), fn_dlerror())
+        try:
+            yield DLError.wrap(fn_dlsym, b'dlsym', fn_dlerror, c_void_p(h_lib), success_handle=lambda x: c_void_p((lambda x: debug_log(f'dlsym@{x}', ret=x))(x)))
+        finally:
+            DLError.handle(
+                not fn_dlclose(h_lib),
+                b'dlclose', path.decode(), fn_dlerror())
     return dlsym_factory
 
 
