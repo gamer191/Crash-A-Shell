@@ -228,52 +228,24 @@ return `:.:${document.URL}: ${pot}`;
 })();
 '''
 
-import sys
-
-from contextlib import ExitStack
-from ctypes import (
-    POINTER,
-    Structure,
-    byref,
-    c_byte, c_char_p,
-    c_double,
-    c_long, c_void_p,
-)
-from typing import Callable, Optional, TypeVar, Union, cast as py_typecast, overload
-
 import os
 import platform
 import struct
 import sys
-
-from contextlib import contextmanager, ExitStack
-from ctypes import (
-    CDLL,
-    CFUNCTYPE,
-    POINTER,
-    Structure,
-    c_bool,
-    c_byte,
-    c_char, c_char_p,
-    c_double, c_float,
-    c_int, c_int16, c_int32, c_int64, c_int8,
-    c_long, c_longdouble, c_longlong,
-    c_short,
-    c_size_t, c_ssize_t,
-    c_ubyte,
-    c_uint, c_uint16, c_uint32, c_uint64, c_uint8,
-    c_ulong, c_ulonglong, c_ushort,
-    c_void_p,
-    c_wchar, c_wchar_p,
-    cast,
-    pointer,
-    sizeof,
-)
+from contextlib import ExitStack, contextmanager
+from ctypes import (CDLL, CFUNCTYPE, POINTER, Structure, byref, c_bool, c_byte,
+                    c_char, c_char_p, c_double, c_float, c_int, c_int8,
+                    c_int16, c_int32, c_int64, c_long, c_longdouble,
+                    c_longlong, c_short, c_size_t, c_ssize_t, c_ubyte, c_uint,
+                    c_uint8, c_uint16, c_uint32, c_uint64, c_ulong,
+                    c_ulonglong, c_ushort, c_void_p, c_wchar, c_wchar_p, cast,
+                    pointer, sizeof)
 from ctypes.util import find_library
 from functools import wraps
 from stat import S_ISREG
-from typing import Any, Callable, Generator, Optional, TypeVar, Union, overload, cast as py_typecast
-
+from typing import Any, Callable, Generator, Optional, TypeVar, Union
+from typing import cast as py_typecast
+from typing import overload
 
 T = TypeVar('T')
 
