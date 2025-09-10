@@ -281,14 +281,7 @@ class PyNeApple:
         return cfn_at(self.pobjc_msgSend, restype, c_void_p, c_void_p, *argtypes)(obj, sel, *args)
 
     def safe_new_object(self, cls: c_void_p, init_name: bytes = b'init', *args, argtypes: tuple[type, ...] = ()) -> NotNull_VoidP:
-        obj = c_void_p(self.send_message(cls, b'alloc', restype=c_void_p))
-        if not obj.value:
-            raise RuntimeError(f'Failed to alloc object of class {cls.value}')
-        obj = c_void_p(self.send_message(obj, init_name, restype=c_void_p, *args, argtypes=argtypes))
-        if not obj.value:
-            self.send_message(obj, b'release')
-            raise RuntimeError(f'Failed to {init_name.decode()} object of class {cls.value}')
-        return NotNull_VoidP(obj.value)
+        return NotNull_VoidP(c_void_p(self.send_message(obj, init_name, restype=c_void_p, *args, argtypes=argtypes)).value)
 
     def safe_objc_getClass(self, name: bytes) -> NotNull_VoidP:
         Cls = c_void_p(self.objc_getClass(name))
