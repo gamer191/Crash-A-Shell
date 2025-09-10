@@ -185,44 +185,37 @@ class PyNeApple:
         self._init = False
 
     def __enter__(self):
-        if self._init:
-            raise RuntimeError('instance already initialized, please create a new instance')
-        try:
-            self._stack = ExitStack()
-            self.dlsym_of_lib = dlsym_factory()
-            self._fwks: dict[str, DLSYM_FUNC] = {}
-            self._init = True
+        self._stack = ExitStack()
+        self.dlsym_of_lib = dlsym_factory()
+        self._fwks: dict[str, DLSYM_FUNC] = {}
+        self._init = True
 
-            self._objc = self._stack.enter_context(self.dlsym_of_lib(b'/usr/lib/libobjc.A.dylib', os.RTLD_NOW))
-            self._system = self._stack.enter_context(self.dlsym_of_lib(b'/usr/lib/libSystem.B.dylib', os.RTLD_LAZY))
-            self.p_NSConcreteMallocBlock = self._system(b'_NSConcreteMallocBlock').value
+        self._objc = self._stack.enter_context(self.dlsym_of_lib(b'/usr/lib/libobjc.A.dylib', os.RTLD_NOW))
+        self._system = self._stack.enter_context(self.dlsym_of_lib(b'/usr/lib/libSystem.B.dylib', os.RTLD_LAZY))
+        self.p_NSConcreteMallocBlock = self._system(b'_NSConcreteMallocBlock').value
 
-            self.class_addProtocol = cfn_at(self._objc(b'class_addProtocol').value, c_byte, c_void_p, c_void_p)
-            self.class_addMethod = cfn_at(self._objc(b'class_addMethod').value, c_byte, c_void_p, c_void_p, c_void_p, c_char_p)
-            self.class_addIvar = cfn_at(self._objc(b'class_addIvar').value, c_byte, c_void_p, c_char_p, c_size_t, c_uint8, c_char_p)
-            self.class_conformsToProtocol = cfn_at(self._objc(b'class_conformsToProtocol').value, c_byte, c_void_p, c_void_p)
+        self.class_addProtocol = cfn_at(self._objc(b'class_addProtocol').value, c_byte, c_void_p, c_void_p)
+        self.class_addMethod = cfn_at(self._objc(b'class_addMethod').value, c_byte, c_void_p, c_void_p, c_void_p, c_char_p)
+        self.class_addIvar = cfn_at(self._objc(b'class_addIvar').value, c_byte, c_void_p, c_char_p, c_size_t, c_uint8, c_char_p)
+        self.class_conformsToProtocol = cfn_at(self._objc(b'class_conformsToProtocol').value, c_byte, c_void_p, c_void_p)
 
-            self.objc_getProtocol = cfn_at(self._objc(b'objc_getProtocol').value, c_void_p, c_char_p)
-            self.objc_allocateClassPair = cfn_at(self._objc(b'objc_allocateClassPair').value, c_void_p, c_void_p, c_char_p, c_size_t)
-            self.objc_registerClassPair = cfn_at(self._objc(b'objc_registerClassPair').value, None, c_void_p)
-            self.objc_getClass = cfn_at(self._objc(b'objc_getClass').value, c_void_p, c_char_p)
-            self.pobjc_msgSend = self._objc(b'objc_msgSend').value
-            self.pobjc_msgSendSuper = self._objc(b'objc_msgSendSuper').value
+        self.objc_getProtocol = cfn_at(self._objc(b'objc_getProtocol').value, c_void_p, c_char_p)
+        self.objc_allocateClassPair = cfn_at(self._objc(b'objc_allocateClassPair').value, c_void_p, c_void_p, c_char_p, c_size_t)
+        self.objc_registerClassPair = cfn_at(self._objc(b'objc_registerClassPair').value, None, c_void_p)
+        self.objc_getClass = cfn_at(self._objc(b'objc_getClass').value, c_void_p, c_char_p)
+        self.pobjc_msgSend = self._objc(b'objc_msgSend').value
+        self.pobjc_msgSendSuper = self._objc(b'objc_msgSendSuper').value
 
-            self.object_getClass = cfn_at(self._objc(b'object_getClass').value, c_void_p, c_void_p)
-            self.object_getInstanceVariable = cfn_at(
-                self._objc(b'object_getInstanceVariable').value, c_void_p,
-                c_void_p, c_char_p, POINTER(c_void_p))
-            self.object_setInstanceVariable = cfn_at(
-                self._objc(b'object_setInstanceVariable').value, c_void_p,
-                c_void_p, c_char_p, c_void_p)
+        self.object_getClass = cfn_at(self._objc(b'object_getClass').value, c_void_p, c_void_p)
+        self.object_getInstanceVariable = cfn_at(
+            self._objc(b'object_getInstanceVariable').value, c_void_p,
+            c_void_p, c_char_p, POINTER(c_void_p))
+        self.object_setInstanceVariable = cfn_at(
+            self._objc(b'object_setInstanceVariable').value, c_void_p,
+            c_void_p, c_char_p, c_void_p)
 
-            self.sel_registerName = cfn_at(self._objc(b'sel_registerName').value, c_void_p, c_char_p)
-            return self
-        except Exception as e:
-            if hasattr(self, '_stack'):
-                self._stack.close()
-            raise e
+        self.sel_registerName = cfn_at(self._objc(b'sel_registerName').value, c_void_p, c_char_p)
+        return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         return self._stack.__exit__(exc_type, exc_value, traceback)
