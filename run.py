@@ -459,4 +459,4 @@ with PyNeApple() as pa:
             WKWebView, b'initWithFrame:configuration:',
             CGRect(), p_cfg,
             argtypes=(CGRect, c_void_p))
-        pa.release_on_exit(p_webview)
+        #pa.release_on_exit(p_webview)
