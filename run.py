@@ -120,13 +120,11 @@ class objc_super(Structure):
     )
 
 
-class CRet:
-    Integral = Union[
+Integral = Union[
         type[c_byte], type[c_ubyte], type[c_short], type[c_ushort], type[c_int], type[c_int8],
         type[c_int16], type[c_int32], type[c_int64], type[c_uint], type[c_uint8], type[c_uint16],
         type[c_uint32], type[c_uint64], type[c_long], type[c_ulong], type[c_longlong], type[c_ulonglong],
-        type[c_size_t], type[c_ssize_t],
-    ]
+        type[c_size_t], type[c_ssize_t],]
 
 class PyNeApple:
     __slots__ = (
@@ -203,7 +201,7 @@ class PyNeApple:
     @overload
     def send_message(self, obj: c_void_p, sel_name: bytes, *args, restype: type[c_wchar], argtypes: tuple[type, ...], is_super: bool = False) -> str: ...
     @overload
-    def send_message(self, obj: c_void_p, sel_name: bytes, *args, restype: CRet.Integral, argtypes: tuple[type, ...], is_super: bool = False) -> int: ...
+    def send_message(self, obj: c_void_p, sel_name: bytes, *args, restype: Integral, argtypes: tuple[type, ...], is_super: bool = False) -> int: ...
     @overload
     def send_message(self, obj: c_void_p, sel_name: bytes, *args, restype: type[c_char_p], argtypes: tuple[type, ...], is_super: bool = False) -> Union[bytes, None]: ...
     @overload
@@ -219,7 +217,7 @@ class PyNeApple:
     @overload
     def send_message(self, obj: c_void_p, sel_name: bytes, *, restype: type[c_wchar], is_super: bool = False) -> str: ...
     @overload
-    def send_message(self, obj: c_void_p, sel_name: bytes, *, restype: CRet.Integral, is_super: bool = False) -> int: ...
+    def send_message(self, obj: c_void_p, sel_name: bytes, *, restype: Integral, is_super: bool = False) -> int: ...
     @overload
     def send_message(self, obj: c_void_p, sel_name: bytes, *, restype: type[c_char_p], is_super: bool = False) -> Union[bytes, None]: ...
     @overload
